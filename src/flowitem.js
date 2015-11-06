@@ -1,10 +1,10 @@
-function flowjsItem(x,y){
+function flowjsItem(x, y, text, radius){
     this.x = x;
     this.y = y;
     
     this.color = "black";
-    this.radius = 40;
-    this.text = "Hello";
+    this.radius = radius || 40;
+    this.text = text || "Hello";
     this.link = "#";
     
     this.circle = new createjs.Shape();

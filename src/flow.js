@@ -22,7 +22,7 @@ function flowjs(canvasId, flowStructure){
     this.itemRadius = 15;
     this.jumpSize = this.itemRadius * 6;
     
-    this.startX = this.width / 2;
+    this.startX = (this.width/2) - ((this.flowStructure.length-1)*(this.jumpSize)/2);
     this.startY = this.height / 2;
     
     this.flowItems = {};
@@ -35,71 +35,105 @@ function flowjs(canvasId, flowStructure){
 
 
 flowjs.prototype.draw = function(){
-    var x = this.startX - this.itemRadius - ((this.flowStructure.length-1) * (this.jumpSize/2));
-
-    // init all the flow points
-    for(var i=0; i<this.flowStructure.length; i++){
-        var row = this.flowStructure[i];
-        this.drawRow(row, x);    
-        x += this.jumpSize;
+    var firstRow = this.flowStructure[0];
+    var x = this.startX;
+    
+    for(var i=0; i<firstRow.length; i++){
+        var offset = ((firstRow.length-1) * (this.jumpSize/2));
+        var y = this.startY - this.itemRadius - offset;
+        y += i * this.jumpSize;
+        
+        var item = firstRow[i];
+        var flowItem = new flowjsItem(x, y, item.id, this.itemRadius);
+        flowItem.refresh();
+        this.flowItems[item.id] = {data: item, flowItem: flowItem};
+        
+        this.drawFlowPathRecursive(this.flowItems[item.id], 1);
     }
     
-    // connect all the points that should be connected
-    var flowItemsCopy = {};
-    for(var key in this.flowItems){flowItemsCopy[key]=this.flowItems[key]}
-    console.log(this.flowItems, flowItemsCopy);
+    this.submitItems();
+};
+
+
+flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
+    // breaking rule
+    if (rowNum >= this.flowStructure.length){
+        return;
+    }
     
-    for(var key in flowItemsCopy){
-        var item = flowItemsCopy[key];
-        if (item.data.next !== undefined && item.data.next.length > 0){
-            for(var i=0; i<item.data.next.length; i++){
-                var nextKey = item.data.next[i];
-                var next = this.flowItems[nextKey];
-                
-                var connectorId = item.data.id+"->"+next.data.id;
-                
-                if (this.flowItems[connectorId] === undefined){
-                    var start = item.flowItem.getLocation();
-                    var end = next.flowItem.getLocation();
-                    var connector = new flowConnector(start.x, start.y, end.x, end.y);
-                    this.flowItems[connectorId] = {flowItem: connector, data: {id: connectorId}};
-                }
-            }
+    var firstShape = firstItem.flowItem;
+    var firstData = firstItem.data;
+    var nextRow = this.flowStructure[rowNum];
+    
+    var usedSpots = 0;
+    for (var i=0; i<nextRow.length; i++){
+        var item=nextRow[i];
+        if (this.flowItems[item.id] !== undefined){
+            usedSpots++;
         }
     }
     
-    console.log(this.flowItems, flowItemsCopy);
-    
-    // add all the flow points to the canvas
+    for (var i=0; i<nextRow.length; i++){
+        
+        var item=nextRow[i];
+        if (firstData.next.indexOf(item.id) == -1){
+            // do nothing, not the next item
+        } 
+        
+        // next item was already drawn, we shoud connect it but should not continue
+        else if (this.flowItems[item.id] !== undefined){
+        
+            var flowItem = this.flowItems[item.id].flowItem;
+            var start = firstShape.getLocation();
+            var end = flowItem.getLocation();
+            var connector = new flowConnector(start.x, start.y, end.x, end.y);
+            var connectorId = firstData.id + "->" + item.id
+            this.flowItems[connectorId] = {flowItem: connector};
+            
+            console.log("connected and stoped", connectorId);
+        } 
+        
+        // found next item, draw it and continue
+        else {
+            var offset = ((nextRow.length-1) * (this.jumpSize/2));
+            var nextY = this.startY - this.itemRadius - offset;
+            nextY += usedSpots * this.jumpSize;
+            usedSpots++;
+            
+            var nextX = this.startX + (rowNum*this.jumpSize);
+            
+            var flowItem = new flowjsItem(nextX, nextY, item.id, this.itemRadius);
+            flowItem.refresh();
+            this.flowItems[item.id] = {data: item, flowItem: flowItem};
+            
+            
+            var start = firstShape.getLocation();
+            var end = flowItem.getLocation();
+            
+            var connector = new flowConnector(start.x, start.y, end.x, end.y);
+            var connectorId = firstData.id + "->" + item.id;
+            this.flowItems[connectorId] = {flowItem: connector};
+            console.log("connected and contineuing", connectorId);
+            
+            this.drawFlowPathRecursive(this.flowItems[item.id], rowNum+1);    
+        }
+    }
+};
+
+
+flowjs.prototype.submitItems = function(){
+    // add all the flow items to the canvas
     for(var key in this.flowItems){
         var item = this.flowItems[key];
         var shapes = item.flowItem.getDrawableItems();
+        
         for(var i=0;i<shapes.length; i++){
             this.stage.addChild(shapes[i]);
         }
     }
     
     // publish the changes to the canvas
-    this.stage.update();
-};
-
-flowjs.prototype.drawRow = function(row, x){
-    var offset = ((row.length-1) * (this.jumpSize/2));
-    var y = this.startY - this.itemRadius - offset;
-    
-    // foreach item in row
-    for(var i=0; i<row.length; i++){
-        var itemData = row[i];
-
-        var item = new flowjsItem(x,y);
-        item.radius = this.itemRadius;
-        item.text = itemData.id;
-        item.refresh();
-        item.listener = this.onItemUpdate;
-        
-        this.flowItems[itemData.id] = {data: itemData, flowItem: item};
-        y += this.jumpSize;
-    }
+    this.stage.update();  
 };
 
 /*  Update a flow item properties. 
