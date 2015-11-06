@@ -38,9 +38,10 @@ function flowjsItem(x,y){
 }
 
 flowjsItem.prototype.refresh = function(){
+    
     this.circle.graphics.beginFill(this.color).drawCircle(0, 0, this.radius);
-    this.circle.x = this.x + this.radius;
-    this.circle.y = this.y + this.radius;
+    this.circle.x = this.getLocation().x;
+    this.circle.y = this.getLocation().y;
     
     this.textShape.text = this.text;
     this.textShape.color = this.color;
@@ -50,6 +51,10 @@ flowjsItem.prototype.refresh = function(){
     this.textShape.x = this.x + this.radius - (textWidth/2);
     this.textShape.y = this.y + (this.radius * 2.2);
 };
+
+flowjsItem.prototype.getLocation = function(){
+    return {x: this.x + this.radius, y: this.y + this.radius};
+}
 
 flowjsItem.prototype.updateShape = function(){
     this.refresh();
