@@ -2,6 +2,7 @@
     <script type="text/javascript" src="lib/easeljs-0.8.1.min.js"></script>
     <script type="text/javascript" src="src/flow.js"></script>
     <script type="text/javascript" src="src/flowitem.js"></script>
+    <script type="text/javascript" src="src/flowconnector.js"></script>
 </head>
 <body>
     <title>Hello World</title>
@@ -22,7 +23,15 @@
             [{id: "f", next: undefined}, {id: "g", next: undefined}]
         ];
         
-        fjs = new flowjs("demoCanvas", a);
+        var b = [ 
+            [{id: "a", next: ["b", "c"]}, {id: "h", next: ["g"]}],
+            [{id: "b", next: ["d"]}, {id: "c", next: ["d"]}, {id: "g", next: ["f"]}],
+            [{id: "d", next: ["e"]}, {id: "f", next: ["e"]}],
+            [{id: "e", next: undefined}]
+        ];
+        
+        
+        fjs = new flowjs("demoCanvas", b);
         
         
         
