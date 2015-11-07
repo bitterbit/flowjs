@@ -1,5 +1,5 @@
 <head>
-    <script type="text/javascript" src="lib/easeljs-0.8.1.min.js"></script>
+    <script type="text/javascript" src="lib/createjs-2015.05.21.min.js"></script>
     <script type="text/javascript" src="src/flow.js"></script>
     <script type="text/javascript" src="src/flowitem.js"></script>
     <script type="text/javascript" src="src/flowconnector.js"></script>
@@ -8,7 +8,10 @@
     <title>Hello World</title>
     <h1>1 - This is the new demo website</h1>
     
-    <canvas id="demoCanvas" width="500" height="300"></canvas>
+    <canvas id="canvas1" width="500" height="300"></canvas>
+    <canvas id="canvas2" width="500" height="300"></canvas>
+    <canvas id="canvas3" width="500" height="300"></canvas>
+    <canvas id="canvas4" width="500" height="300"></canvas>
     
     <script type="text/javascript">
     window.addEventListener("load", func);
@@ -17,34 +20,55 @@
         console.log("LOADED");
         
         var a = [ 
-            [{id: "a", next: ["b"]}, {id: "c", next: ["b"]}],
-            [{id: "b", next: ["e"]}],
-            [{id: "e", next: ["f", "g"]}],
-            [{id: "f", next: undefined}, {id: "g", next: undefined}]
+            [{id: "The Collector C", next: ["Groot"]}],
+            [{id: "Groot", next: ["Peter Quill"]}],
+            [{id: "Peter Quill", next: ["Drax"]}],
+            [{id: "Drax", next: undefined}]
         ];
         
         var b = [ 
-            [{id: "a", next: ["b", "c"]}, {id:""+Math.random(), empty: true, next:["g"]}, {id: "h", next: ["g"]}],
-            [{id: "g", next: ["f", "s"]}, {id: "b", next: ["d"]}, {id: "c", next: ["d"]} ],
-            [{id: "d", next: ["e"]}, {id: "f", next: ["e"]}, {id: "s", next: ["e"]}],
-            [{id: "e", next: undefined}]
+            [{id: "The Collector A", next: ["Meredith Quill"]}, {id:"z1", empty: true, next: undefined}, {id: "The Collector B", next:["Peter Quill Y", "Peter Quill X"]}],
+            [{id: "Meredith Quill", next: ["Drax"]}, {id: "Peter Quill X", next: ["Drax"]}, {id: "Peter Quill Y", next: ["Drax"]} ],
+            [{id: "Drax", next: undefined}]
+        ];
+        
+        var c = [ 
+            [{id: "The Collector C", next: ["Nebula B"]}, {id: "Peter Quill", next:["Nebula A"]}],
+            [{id: "Nebula B", next: ["Drax"]}, {id: "Nebula A", next: ["Drax"]}],
+            [{id: "Drax", next: undefined}]
+        ];
+        
+        var d = [ 
+            [{id: "Rocket", next: ["Ronan"]}],
+            [{id: "Ronan", next: ["Korath", "Peter Quill", "Peter Quill X", "Peter Quill Y", "Meredith Quill"]}],
+            [{id: "Korath", next: ["Groot", "z1", "z2"]}, {id: "Peter Quill"},  {id: "Peter Quill X"},  {id: "Peter Quill Y"}, {id: "Meredith Quill"}],
+            [{id: "Groot"}, {id:"z1", empty: true}, {id:"z2", empty: true}, {id:"z3", empty: true}, {id:"z4", empty: true}]
         ];
         
         
-        fjs = new flowjs("demoCanvas", b);
         
+        new flowjs("canvas1", a).draw();
+        new flowjs("canvas2", b).draw();
+        new flowjs("canvas3", c).draw();
+        df = new flowjs("canvas4", d);
+        df.draw();
         
+        for(var i=0;i<d.length; i++){
+            var row = d[i];
+            for(var k=0; k<row.length; k++){
+                var item = row[k];
+                doSomething(item.id);
+            }
+        }
         
-        // var line = new createjs.Shape();
-        // line.graphics.setStrokeStyle(3).beginStroke("grey").moveTo(0,150).lineTo(1000,150).endStroke();
-        // fjs.stage.addChild(line);
-
-        // line = new createjs.Shape();
-        // line.graphics.setStrokeStyle(3).beginStroke("grey").moveTo(250,0).lineTo(250,1000).endStroke();
-        // fjs.stage.addChild(line);
-
-        
-        fjs.draw();
+        function doSomething(itemId){
+            setTimeout(function(){
+                df.updateItem(itemId, function(item){
+                    console.log("c");
+                    item.toggleFlashing();
+                });
+            }, Math.random()*1000);
+        }
     }
         
     </script>

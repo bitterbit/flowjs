@@ -9,7 +9,7 @@ function flowjsItem(x, y, text, radius, listener){
     this.text = text || "Hello";
     this.link = "#";
     this.font = "Arial";
-    this.fontSize = "20px";
+    this.fontSize = "16px";
     
     this.circle = new createjs.Shape();
     this.textShape = new createjs.Text();
@@ -20,7 +20,8 @@ function flowjsItem(x, y, text, radius, listener){
     
     var that = this;
     var onclick = function(){
-        console.log("click");    
+        console.log("click");   
+        window.open(this.link);
     };
     
     var onmouseover = function(){
@@ -43,7 +44,7 @@ function flowjsItem(x, y, text, radius, listener){
 }
 
 flowjsItem.prototype.refresh = function(){
-    
+    this.circle.graphics.clear()
     this.circle.graphics.beginStroke(this.color).beginFill(this.background).drawCircle(0, 0, this.radius);
     this.circle.x = this.getLocation().x;
     this.circle.y = this.getLocation().y;
@@ -73,7 +74,16 @@ flowjsItem.prototype.getDrawableItems = function(){
 };
 
 flowjsItem.prototype.toggleFlashing = function(){
-  // TODO: how should i implement this???  
+    var y = this.getLocation().y;
+    var distance = this.radius/5;
+    console.log(distance);
+    
+    createjs.Tween.get(this.circle, {loop: true })
+        .to({ y: y}, 100)
+        .to({ y: y+distance}, 200)
+        .to({ y: y-distance}, 200)
+        .to({ y: y}, 100)
+        .wait(300)
 };
 
 
@@ -81,7 +91,7 @@ flowjsItem.prototype.toggleFlashing = function(){
 
 function flowjsItemEmpty(x, y, radius){
     flowjsItem.call(this, x, y, undefined, radius);
-    this.alpha = 0;
+    this.alpha = 0.1;
     this.empty = true;
 }
 

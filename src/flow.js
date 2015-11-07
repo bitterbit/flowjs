@@ -1,21 +1,3 @@
-/**
- * input exmaple: 
- *  var a = [ 
-            [{id: "a", next: ["b"]}, {id: "c", next: ["b"]}],
-            [{id: "b", next: ["e"]}],
-            [{id: "e", next: ["f", "g"]}],
-            [{id: "f", next: undefined}, {id: "g", next: undefined}]
-        ];
-        
-        var b = [ 
-            [{id: "a", next: ["b", "c"]}, {id: "h", next: ["g"]}],
-            [{id: "g", next: ["f"]}, {id: "b", next: ["d"]}, {id: "c", next: ["d"]} ],
-            [{id: "d", next: ["e"]}, {id: "f", next: ["e"]}],
-            [{id: "e", next: undefined}]
-        ];
- * */
-
-
 function flowjs(canvasId, flowStructure){
     this.stage = new createjs.Stage(canvasId);
     this.stage.enableMouseOver(5);
@@ -26,12 +8,14 @@ function flowjs(canvasId, flowStructure){
     this.height = this.stage.canvas.height;
     
     this.itemRadius = 15;
-    this.jumpSize = this.itemRadius * 6;
+    this.yJumpSize = this.itemRadius * 4;
+    this.xJumpSize = this.itemRadius * 9;
+    
     this.lineWidth = 6;
     this.color = "purple";
     this.background = "white";
     
-    this.startX = (this.width/2) - ((this.flowStructure.length-1)*(this.jumpSize)/2);
+    this.startX = (this.width/2) - ((this.flowStructure.length-1)*(this.xJumpSize)/2);
     this.startY = this.height / 2;
     
     this.flowItems = {};
@@ -39,10 +23,13 @@ function flowjs(canvasId, flowStructure){
     
     this.stage.canvas.style.background = this.background;
     
-    var thatStage = this.stage;
-    this.onItemUpdate = function(){
-        thatStage.update();
-    };
+    createjs.Ticker.setFPS(60);
+    createjs.Ticker.addEventListener("tick", this.stage);
+    
+    // var thatStage = this.stage;
+    // this.onItemUpdate = function(){
+    //     thatStage.update();
+    // };
 }
 
 
@@ -78,7 +65,7 @@ flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
     for (var i=0; i<nextRow.length; i++){
         
         var itemData=nextRow[i];
-        if (firstData.next.indexOf(itemData.id) == -1){
+        if (firstData.next === undefined || firstData.next.indexOf(itemData.id) == -1){
             // do nothing, not the next item
         } 
         
@@ -109,9 +96,9 @@ flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
 
 
 flowjs.prototype._createItem = function(data, rowNum, rowItemCount, rowUsedSpots){
-    var offset = ((rowItemCount-1) * (this.jumpSize/2));
-    var y = this.startY - this.itemRadius - offset + (rowUsedSpots * this.jumpSize);
-    var x = this.startX + (rowNum*this.jumpSize);
+    var offset = ((rowItemCount-1) * (this.yJumpSize/2));
+    var y = this.startY - this.itemRadius - offset + (rowUsedSpots * this.yJumpSize);
+    var x = this.startX + (rowNum*this.xJumpSize);
     
     if(data.empty !== undefined && data.empty === true){
         var flowItem = new flowjsItemEmpty(x, y, this.itemRadius);
@@ -129,7 +116,7 @@ flowjs.prototype._createConnector = function(itemA, itemB){
     var start = itemA.getLocation();
     var end = itemB.getLocation();
     
-    if(itemA.empty !== undefined && itemA.empty){
+    if((itemA.empty !== undefined && itemA.empty) || (itemB.empty !== undefined && itemB.empty)){
         var connector = new flowConnectorEmpty(start.x, start.y, end.x, end.y);
     } else {
         var connector = new flowConnector(start.x, start.y, end.x, end.y);
@@ -165,4 +152,8 @@ flowjs.prototype.submitItemsFromMap = function(map){
 /*  Update a flow item properties. 
     The given function will be called and will be passed the flow item object */
 flowjs.prototype.updateItem = function(itemId, func){
+    var item = this.flowItems[itemId].flowItem;
+    func(item);
+    item.refresh();
+    this.stage.update();
 };
