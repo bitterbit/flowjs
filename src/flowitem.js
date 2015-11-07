@@ -4,6 +4,7 @@ function flowjsItem(x, y, text, radius, listener){
     
     this.color = "black";
     this.background = "blue";
+    this.alpha = 1;
     this.radius = radius || 40;
     this.text = text || "Hello";
     this.link = "#";
@@ -46,6 +47,7 @@ flowjsItem.prototype.refresh = function(){
     this.circle.graphics.beginStroke(this.color).beginFill(this.background).drawCircle(0, 0, this.radius);
     this.circle.x = this.getLocation().x;
     this.circle.y = this.getLocation().y;
+    this.circle.alpha = this.alpha;
     
     this.textShape.text = this.text;
     this.textShape.color = this.color;
@@ -54,11 +56,12 @@ flowjsItem.prototype.refresh = function(){
     var textWidth = this.textShape.getBounds().width;
     this.textShape.x = this.x + this.radius - (textWidth/2);
     this.textShape.y = this.y + (this.radius * 2.2);
+    this.textShape.alpha = this.alpha;
 };
 
 flowjsItem.prototype.getLocation = function(){
     return {x: this.x + this.radius, y: this.y + this.radius};
-}
+};
 
 flowjsItem.prototype.updateShape = function(){
     this.refresh();
@@ -72,3 +75,14 @@ flowjsItem.prototype.getDrawableItems = function(){
 flowjsItem.prototype.toggleFlashing = function(){
   // TODO: how should i implement this???  
 };
+
+
+
+
+function flowjsItemEmpty(x, y, radius){
+    flowjsItem.call(this, x, y, undefined, radius);
+    this.alpha = 0;
+    this.empty = true;
+}
+
+flowjsItemEmpty.prototype = flowjsItem.prototype;

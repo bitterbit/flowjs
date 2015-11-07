@@ -112,7 +112,13 @@ flowjs.prototype._createItem = function(data, rowNum, rowItemCount, rowUsedSpots
     var offset = ((rowItemCount-1) * (this.jumpSize/2));
     var y = this.startY - this.itemRadius - offset + (rowUsedSpots * this.jumpSize);
     var x = this.startX + (rowNum*this.jumpSize);
-    var flowItem = new flowjsItem(x, y, data.id, this.itemRadius, this.onItemUpdate);
+    
+    if(data.empty !== undefined && data.empty === true){
+        var flowItem = new flowjsItemEmpty(x, y, this.itemRadius);
+    } else {
+        var flowItem = new flowjsItem(x, y, data.id, this.itemRadius, this.onItemUpdate);
+    }
+    
     flowItem.color = this.color;
     flowItem.background = this.background;
     flowItem.refresh();
@@ -122,7 +128,13 @@ flowjs.prototype._createItem = function(data, rowNum, rowItemCount, rowUsedSpots
 flowjs.prototype._createConnector = function(itemA, itemB){
     var start = itemA.getLocation();
     var end = itemB.getLocation();
-    var connector = new flowConnector(start.x, start.y, end.x, end.y);
+    
+    if(itemA.empty !== undefined && itemA.empty){
+        var connector = new flowConnectorEmpty(start.x, start.y, end.x, end.y);
+    } else {
+        var connector = new flowConnector(start.x, start.y, end.x, end.y);
+    }
+    
     connector.color = this.color;
     connector.strokeWidth = this.lineWidth;
     connector.refresh();

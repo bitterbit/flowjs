@@ -24,9 +24,9 @@
         ];
         
         var b = [ 
-            [{id: "a", next: ["b", "c"]}, {id: "h", next: ["g"]}],
-            [{id: "g", next: ["f"]}, {id: "b", next: ["d"]}, {id: "c", next: ["d"]} ],
-            [{id: "d", next: ["e"]}, {id: "f", next: ["e"]}],
+            [{id: "a", next: ["b", "c"]}, {id:""+Math.random(), empty: true, next:["g"]}, {id: "h", next: ["g"]}],
+            [{id: "g", next: ["f", "s"]}, {id: "b", next: ["d"]}, {id: "c", next: ["d"]} ],
+            [{id: "d", next: ["e"]}, {id: "f", next: ["e"]}, {id: "s", next: ["e"]}],
             [{id: "e", next: undefined}]
         ];
         

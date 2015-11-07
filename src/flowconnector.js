@@ -1,6 +1,6 @@
 function flowConnector(xa, ya, xb, yb) {
     this.color = "blue";//"#"+((1<<24)*Math.random()|0).toString(16);
-    this.opacity = 1;
+    this.alpha = 1;
     this.strokeWidth = 3;
     
     this.xa = xa;
@@ -19,7 +19,7 @@ flowConnector.prototype.generateLine = function(pointA, pointB){
         .moveTo(pointA.x, pointA.y)
         .lineTo(pointB.x, pointB.y);
     line = new createjs.Shape(line);
-    line.opacity = this.opacity;
+    line.alpha = this.alpha;
     return line;
 };
 
@@ -41,8 +41,17 @@ flowConnector.prototype.refresh = function(){
         this.generateLine(middleA, middleB),
         this.generateLine(middleB, end)
     ];
-}
+};
 
 flowConnector.prototype.getDrawableItems = function(){
     return this.lines;
 };
+
+
+function flowConnectorEmpty(xa, ya, xb, yb) {
+    flowConnector.call(this, xa, ya, xb, yb);
+    this.alpha = 0;
+    this.empty = true;
+}
+
+flowConnectorEmpty.prototype = flowConnector.prototype;
