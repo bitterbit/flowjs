@@ -1,17 +1,20 @@
-function flowjsItem(x, y, text, radius){
+function flowjsItem(x, y, text, radius, listener){
     this.x = x;
     this.y = y;
     
     this.color = "black";
+    this.background = "blue";
     this.radius = radius || 40;
     this.text = text || "Hello";
     this.link = "#";
+    this.font = "Arial";
+    this.fontSize = "20px";
     
     this.circle = new createjs.Shape();
     this.textShape = new createjs.Text();
     
     
-    this.listener = function(){/*override this function*/};
+    this.listener = listener || function(){/*override this function*/};
     
     
     var that = this;
@@ -20,12 +23,13 @@ function flowjsItem(x, y, text, radius){
     };
     
     var onmouseover = function(){
+        that.originalColor = that.color;
         that.color = "green";
         that.updateShape();
     };
     
     var onmouseout = function(){
-        that.color = "black";
+        that.color = that.originalColor || "black";
         that.updateShape();
     };
     
@@ -39,13 +43,13 @@ function flowjsItem(x, y, text, radius){
 
 flowjsItem.prototype.refresh = function(){
     
-    this.circle.graphics.beginFill(this.color).drawCircle(0, 0, this.radius);
+    this.circle.graphics.beginStroke(this.color).beginFill(this.background).drawCircle(0, 0, this.radius);
     this.circle.x = this.getLocation().x;
     this.circle.y = this.getLocation().y;
     
     this.textShape.text = this.text;
     this.textShape.color = this.color;
-    this.textShape.lineHeight = this.radius / 2.5;
+    this.textShape.font = this.fontSize + " " + this.font;
     
     var textWidth = this.textShape.getBounds().width;
     this.textShape.x = this.x + this.radius - (textWidth/2);

@@ -8,7 +8,7 @@
     <title>Hello World</title>
     <h1>1 - This is the new demo website</h1>
     
-    <canvas id="demoCanvas" width="500" height="300" style="background: beige;"></canvas>
+    <canvas id="demoCanvas" width="500" height="300"></canvas>
     
     <script type="text/javascript">
     window.addEventListener("load", func);
@@ -35,13 +35,13 @@
         
         
         
-        var line = new createjs.Shape();
-        line.graphics.setStrokeStyle(3).beginStroke("grey").moveTo(0,150).lineTo(1000,150).endStroke();
-        fjs.stage.addChild(line);
+        // var line = new createjs.Shape();
+        // line.graphics.setStrokeStyle(3).beginStroke("grey").moveTo(0,150).lineTo(1000,150).endStroke();
+        // fjs.stage.addChild(line);
 
-        line = new createjs.Shape();
-        line.graphics.setStrokeStyle(3).beginStroke("grey").moveTo(250,0).lineTo(250,1000).endStroke();
-        fjs.stage.addChild(line);
+        // line = new createjs.Shape();
+        // line.graphics.setStrokeStyle(3).beginStroke("grey").moveTo(250,0).lineTo(250,1000).endStroke();
+        // fjs.stage.addChild(line);
 
         
         fjs.draw();

@@ -20,8 +20,6 @@ function flowjs(canvasId, flowStructure){
     this.stage = new createjs.Stage(canvasId);
     this.stage.enableMouseOver(5);
     
-    console.log("stage", this.stage);
-    
     this.flowStructure = flowStructure;
     
     this.width = this.stage.canvas.width;
@@ -29,11 +27,17 @@ function flowjs(canvasId, flowStructure){
     
     this.itemRadius = 15;
     this.jumpSize = this.itemRadius * 6;
+    this.lineWidth = 6;
+    this.color = "purple";
+    this.background = "white";
     
     this.startX = (this.width/2) - ((this.flowStructure.length-1)*(this.jumpSize)/2);
     this.startY = this.height / 2;
     
     this.flowItems = {};
+    this.flowConnectors = {};
+    
+    this.stage.canvas.style.background = this.background;
     
     var thatStage = this.stage;
     this.onItemUpdate = function(){
@@ -83,7 +87,7 @@ flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
             var nextFlowItem = this.flowItems[itemData.id].flowItem;
             var connector = this._createConnector(firstShape, nextFlowItem);
             var connectorId = firstData.id + "->" + itemData.id
-            this.flowItems[connectorId] = connector;
+            this.flowConnectors[connectorId] = connector;
             console.log("connected and stoped", connectorId);
         } 
         
@@ -94,7 +98,7 @@ flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
             usedSpots++;
             
             var connectorId = firstData.id + "->" + itemData.id;
-            this.flowItems[connectorId] = this._createConnector(firstShape, nextFlowItem.flowItem);
+            this.flowConnectors[connectorId] = this._createConnector(firstShape, nextFlowItem.flowItem);
             
             console.log("connected and contineuing", connectorId);
             
@@ -108,7 +112,9 @@ flowjs.prototype._createItem = function(data, rowNum, rowItemCount, rowUsedSpots
     var offset = ((rowItemCount-1) * (this.jumpSize/2));
     var y = this.startY - this.itemRadius - offset + (rowUsedSpots * this.jumpSize);
     var x = this.startX + (rowNum*this.jumpSize);
-    var flowItem = new flowjsItem(x, y, data.id, this.itemRadius);
+    var flowItem = new flowjsItem(x, y, data.id, this.itemRadius, this.onItemUpdate);
+    flowItem.color = this.color;
+    flowItem.background = this.background;
     flowItem.refresh();
     return {data: data, flowItem: flowItem};
 };
@@ -117,22 +123,31 @@ flowjs.prototype._createConnector = function(itemA, itemB){
     var start = itemA.getLocation();
     var end = itemB.getLocation();
     var connector = new flowConnector(start.x, start.y, end.x, end.y);
+    connector.color = this.color;
+    connector.strokeWidth = this.lineWidth;
+    connector.refresh();
     return {flowItem: connector};
 };
 
 
 flowjs.prototype.submitItems = function(){
+    this.submitItemsFromMap(this.flowConnectors);
+    this.submitItemsFromMap(this.flowItems);
+    
+    // publish the changes to the canvas
+    this.stage.update();  
+};
+
+
+flowjs.prototype.submitItemsFromMap = function(map){
     // add all the flow items to the canvas
-    for(var key in this.flowItems){
-        var item = this.flowItems[key];
+    for(var key in map){
+        var item = map[key];
         var shapes = item.flowItem.getDrawableItems();
         for(var i=0;i<shapes.length; i++){
             this.stage.addChild(shapes[i]);
         }
     }
-    
-    // publish the changes to the canvas
-    this.stage.update();  
 };
 
 /*  Update a flow item properties. 
