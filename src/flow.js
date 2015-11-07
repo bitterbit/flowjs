@@ -1,10 +1,18 @@
 /**
- * Flow structure
- * [ [{id: a, next: [b]}, {id: c, next: [b]}],
- *   [{id: b, next: [d]}],
- *   [{id: e, next: [f,g]}],
- *   [{id: f, next: undefined}, {id: g, next: undefined}]
- * ]
+ * input exmaple: 
+ *  var a = [ 
+            [{id: "a", next: ["b"]}, {id: "c", next: ["b"]}],
+            [{id: "b", next: ["e"]}],
+            [{id: "e", next: ["f", "g"]}],
+            [{id: "f", next: undefined}, {id: "g", next: undefined}]
+        ];
+        
+        var b = [ 
+            [{id: "a", next: ["b", "c"]}, {id: "h", next: ["g"]}],
+            [{id: "g", next: ["f"]}, {id: "b", next: ["d"]}, {id: "c", next: ["d"]} ],
+            [{id: "d", next: ["e"]}, {id: "f", next: ["e"]}],
+            [{id: "e", next: undefined}]
+        ];
  * */
 
 
