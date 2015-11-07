@@ -1,5 +1,5 @@
 function flowConnector(xa, ya, xb, yb) {
-    this.color = "blue";//"#"+((1<<24)*Math.random()|0).toString(16);
+    this.color = "blue";
     this.alpha = 1;
     this.strokeWidth = 3;
     
@@ -9,26 +9,23 @@ function flowConnector(xa, ya, xb, yb) {
     this.xb = xb;
     this.yb = yb;
     
-    this.refresh();
 }
 
-flowConnector.prototype.generateLine = function(pointA, pointB){
-    var line = new createjs.Graphics();
-    line.setStrokeStyle(this.strokeWidth)
+flowConnector.prototype.generateLine = function(line, pointA, pointB){
+    line.graphics.setStrokeStyle(this.strokeWidth)
         .beginStroke(this.color)
         .moveTo(pointA.x, pointA.y)
         .lineTo(pointB.x, pointB.y);
-    line = new createjs.Shape(line);
     line.alpha = this.alpha;
     return line;
 };
 
-flowConnector.prototype.generateDot = function(point){
-    var pointShape = new createjs.Shape();
+flowConnector.prototype.generateDot = function(pointShape, point){
+    console.log("point", pointShape, point);
     pointShape.graphics.beginFill(this.color).drawCircle(point.x, point.y, this.strokeWidth/2);
     pointShape.alpha = this.alpha;
     return pointShape;
-}
+};
 
 flowConnector.prototype.refresh = function(){
     var height = Math.abs(this.yb - this.ya);
@@ -43,23 +40,35 @@ flowConnector.prototype.refresh = function(){
     var middleB = {x: middleA.x+height,              y: this.yb};
     var end =     {x: this.xb,                       y: this.yb}; 
     
-    this.lines = [
-        this.generateLine(start, middleA),
-        this.generateDot(middleA),
-        this.generateLine(middleA, middleB),
-        this.generateDot(middleB),
-        this.generateLine(middleB, end)
-    ];
+    if (this.lines === undefined || this.dots == undefined){
+        this.lines = [
+            this.generateLine(new createjs.Shape(), start, middleA),
+            this.generateLine(new createjs.Shape(), middleA, middleB),
+            this.generateLine(new createjs.Shape(), middleB, end)
+        ];
+        
+        this.dots = [
+            this.generateDot(new createjs.Shape(), middleA),
+            this.generateDot(new createjs.Shape(), middleB),
+        ];
+    } else {
+        this.generateLine(this.lines[0], start, middleA)
+        this.generateLine(this.lines[1], middleA, middleB);
+        this.generateLine(this.lines[2], middleB, end);
+        
+        this.generateDot(this.dots[0], middleA);
+        this.generateDot(this.dots[1], middleB);
+    }
 };
 
 flowConnector.prototype.getDrawableItems = function(){
-    return this.lines;
+    return this.lines.concat(this.dots);
 };
 
 
 function flowConnectorEmpty(xa, ya, xb, yb) {
     flowConnector.call(this, xa, ya, xb, yb);
-    this.alpha = 0.1;
+    this.alpha = 0;
     this.empty = true;
 }
 

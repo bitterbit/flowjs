@@ -10,6 +10,7 @@ function flowjsItem(x, y, text, radius, listener){
     this.link = "#";
     this.font = "Arial";
     this.fontSize = "16px";
+    this.strokeWidth = 2;
     
     this.circle = new createjs.Shape();
     this.textShape = new createjs.Text();
@@ -41,11 +42,12 @@ function flowjsItem(x, y, text, radius, listener){
     this.textShape.addEventListener("mouseout",     onmouseout);
     this.circle.addEventListener("mouseover",       onmouseover);
     this.textShape.addEventListener("mouseover",    onmouseover);
+    
 }
 
 flowjsItem.prototype.refresh = function(){
     this.circle.graphics.clear()
-    this.circle.graphics.beginStroke(this.color).beginFill(this.background).drawCircle(0, 0, this.radius);
+    this.circle.graphics.setStrokeStyle(this.strokeWidth).beginStroke(this.color).beginFill(this.background).drawCircle(0, 0, this.radius);
     this.circle.x = this.getLocation().x;
     this.circle.y = this.getLocation().y;
     this.circle.alpha = this.alpha;
@@ -58,6 +60,8 @@ flowjsItem.prototype.refresh = function(){
     this.textShape.x = this.x + this.radius - (textWidth/2);
     this.textShape.y = this.y + (this.radius * 2.2);
     this.textShape.alpha = this.alpha;
+    
+    this.loadingAnimation = this.loadingAnimation || this._getLoadingAnimation();
 };
 
 flowjsItem.prototype.getLocation = function(){
@@ -74,24 +78,28 @@ flowjsItem.prototype.getDrawableItems = function(){
 };
 
 flowjsItem.prototype.toggleFlashing = function(){
-    var y = this.getLocation().y;
-    var distance = this.radius/5;
-    console.log(distance);
-    
-    createjs.Tween.get(this.circle, {loop: true })
-        .to({ y: y}, 100)
-        .to({ y: y+distance}, 200)
-        .to({ y: y-distance}, 200)
-        .to({ y: y}, 100)
-        .wait(300)
+    var isPaused = this.loadingAnimation._paused;
+    this.loadingAnimation.setPaused(!isPaused);
 };
 
+flowjsItem.prototype._getLoadingAnimation = function(){
+    var y = this.getLocation().y;
+    var distance = this.radius/2;
 
+    var anim = createjs.Tween.get(this.circle, {loop: true, paused: true})
+        // .to({ y: y}, 100,           createjs.Ease.getPowIn(2.2))
+        .to({ y: y-distance}, 300,  createjs.Ease.getPowIn(2))
+        .to({ y: y+distance}, 300,  createjs.Ease.getPowIn(2))
+        .to({ y: y}, 100)
+        // .wait(100);
+    anim.setPaused(true);
+    return anim;
+};
 
 
 function flowjsItemEmpty(x, y, radius){
     flowjsItem.call(this, x, y, undefined, radius);
-    this.alpha = 0.1;
+    this.alpha = 0;
     this.empty = true;
 }
 

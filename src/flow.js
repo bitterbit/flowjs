@@ -72,11 +72,15 @@ flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
         // next item was already drawn, we shoud connect it but should not continue
         else if (this.flowItems[itemData.id] !== undefined){
             var nextFlowItem = this.flowItems[itemData.id].flowItem;
+            
             var connector = this._createConnector(firstShape, nextFlowItem);
-            var connectorId = firstData.id + "->" + itemData.id
-            this.flowConnectors[connectorId] = connector;
-            console.log("connected and stoped", connectorId);
-        } 
+
+            var connectors = this.flowItems[firstData.id].connectors || [];
+            connectors.push(connector);
+            this.flowItems[firstData.id].connectors = connectors;
+            
+            console.log("connected and stoped", firstData.id, "->", itemData.id);
+        }
         
         // found next item, draw it and continue
         else {
@@ -84,10 +88,13 @@ flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
             this.flowItems[itemData.id] = nextFlowItem;
             usedSpots++;
             
-            var connectorId = firstData.id + "->" + itemData.id;
-            this.flowConnectors[connectorId] = this._createConnector(firstShape, nextFlowItem.flowItem);
+            var connector = this._createConnector(firstShape, nextFlowItem.flowItem);
             
-            console.log("connected and contineuing", connectorId);
+            var connectors = this.flowItems[firstData.id].connectors || [];
+            connectors.push(connector);
+            this.flowItems[firstData.id].connectors = connectors;
+
+            console.log("connected and contineuing",  firstData.id, "->", itemData.id);
             
             this.drawFlowPathRecursive(this.flowItems[itemData.id], rowNum+1);    
         }
@@ -125,35 +132,59 @@ flowjs.prototype._createConnector = function(itemA, itemB){
     connector.color = this.color;
     connector.strokeWidth = this.lineWidth;
     connector.refresh();
-    return {flowItem: connector};
+    return connector;
 };
 
 
 flowjs.prototype.submitItems = function(){
-    this.submitItemsFromMap(this.flowConnectors);
-    this.submitItemsFromMap(this.flowItems);
+    var connetorShapes = [];
+    var pointShapes = [];
     
-    // publish the changes to the canvas
-    this.stage.update();  
-};
-
-
-flowjs.prototype.submitItemsFromMap = function(map){
-    // add all the flow items to the canvas
-    for(var key in map){
-        var item = map[key];
-        var shapes = item.flowItem.getDrawableItems();
-        for(var i=0;i<shapes.length; i++){
-            this.stage.addChild(shapes[i]);
+    for (var key in this.flowItems){
+        var flowShapes = this.flowItems[key].flowItem.getDrawableItems();
+        flowShapes.forEach(function(shape){
+            pointShapes.push(shape);
+        });
+        
+        var connectors = this.flowItems[key].connectors;
+        if(connectors !== undefined){
+            connectors.forEach(function(conn){
+                console.log("key", key, conn);
+                conn.getDrawableItems().forEach(function(shape){
+                    connetorShapes.push(shape);
+                })
+            })
         }
     }
+    
+    var stage = this.stage;
+    connetorShapes.forEach(function(shape){
+        stage.addChild(shape);
+    });
+    
+    pointShapes.forEach(function(shape){
+        stage.addChild(shape); 
+    });
+
+    this.stage.update();  
 };
 
 /*  Update a flow item properties. 
     The given function will be called and will be passed the flow item object */
 flowjs.prototype.updateItem = function(itemId, func){
-    var item = this.flowItems[itemId].flowItem;
+    var item = this.flowItems[itemId];
+    if(item === undefined){
+        return;
+    }
+    
     func(item);
-    item.refresh();
+    
+    item.flowItem.refresh();
+    if (item.connectors !== undefined){
+        item.connectors.forEach(function(connector){
+            connector.refresh();
+        });
+    }
+    
     this.stage.update();
 };

@@ -5,8 +5,8 @@
     <script type="text/javascript" src="src/flowconnector.js"></script>
 </head>
 <body>
-    <title>Hello World</title>
-    <h1>1 - This is the new demo website</h1>
+    <title>Gurdians of the flow charts</title>
+    <h1>Gurdians of the flow charts</h1>
     
     <canvas id="canvas1" width="500" height="300"></canvas>
     <canvas id="canvas2" width="500" height="300"></canvas>
@@ -57,18 +57,34 @@
             var row = d[i];
             for(var k=0; k<row.length; k++){
                 var item = row[k];
-                doSomething(item.id);
+                var dur = Math.random() * 1000 * 10;
+                simulateLoading(item.id, dur);
+                simulateDoneLoading(item.id, dur*2);
             }
         }
         
-        function doSomething(itemId){
+        function simulateLoading(itemId, timeout){
             setTimeout(function(){
                 df.updateItem(itemId, function(item){
-                    console.log("c");
-                    item.toggleFlashing();
+                    item.flowItem.toggleFlashing();
                 });
-            }, Math.random()*1000);
+            }, timeout);
+            
         }
+        
+        function simulateDoneLoading(itemId, timeout){
+            setTimeout(function(){
+                df.updateItem(itemId, function(item){
+                    item.flowItem.toggleFlashing();
+                    item.flowItem.color = "red";
+                    if (item.connectors === undefined){return}
+                    item.connectors.forEach(function(conn){
+                       conn.color = "red"; 
+                    });
+                });
+            }, timeout);
+        }
+    
     }
         
     </script>
