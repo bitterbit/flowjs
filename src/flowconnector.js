@@ -23,6 +23,13 @@ flowConnector.prototype.generateLine = function(pointA, pointB){
     return line;
 };
 
+flowConnector.prototype.generateDot = function(point){
+    var pointShape = new createjs.Shape();
+    pointShape.graphics.beginFill(this.color).drawCircle(point.x, point.y, this.strokeWidth/2);
+    pointShape.alpha = this.alpha;
+    return pointShape;
+}
+
 flowConnector.prototype.refresh = function(){
     var height = Math.abs(this.yb - this.ya);
     var width = Math.abs(this.xb - this.xa);
@@ -38,7 +45,9 @@ flowConnector.prototype.refresh = function(){
     
     this.lines = [
         this.generateLine(start, middleA),
+        this.generateDot(middleA),
         this.generateLine(middleA, middleB),
+        this.generateDot(middleB),
         this.generateLine(middleB, end)
     ];
 };
@@ -50,7 +59,7 @@ flowConnector.prototype.getDrawableItems = function(){
 
 function flowConnectorEmpty(xa, ya, xb, yb) {
     flowConnector.call(this, xa, ya, xb, yb);
-    this.alpha = 0;
+    this.alpha = 0.1;
     this.empty = true;
 }
 
