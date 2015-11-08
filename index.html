@@ -1,8 +1,12 @@
 <head>
     <script type="text/javascript" src="lib/createjs-2015.05.21.min.js"></script>
     <script type="text/javascript" src="src/flow.js"></script>
+    <script type="text/javascript" src="src/flow2.js"></script>
     <script type="text/javascript" src="src/flowitem.js"></script>
     <script type="text/javascript" src="src/flowconnector.js"></script>
+    
+    <script type="text/javascript" src="src/graph.js"></script>
+    
 </head>
 <body>
     <title>Gurdians of the flow charts</title>
@@ -47,21 +51,41 @@
         
         
         
-        new flowjs("canvas1", a).draw();
-        new flowjs("canvas2", b).draw();
-        new flowjs("canvas3", c).draw();
-        df = new flowjs("canvas4", d);
-        df.draw();
+        //new flowjs("canvas1", a).draw();
+        //new flowjs("canvas2", b).draw();
+        // new flowjs("canvas3", c).draw();
         
-        for(var i=0;i<d.length; i++){
-            var row = d[i];
-            for(var k=0; k<row.length; k++){
-                var item = row[k];
-                var dur = Math.random() * 1000 * 10;
-                simulateLoading(item.id, dur);
-                simulateDoneLoading(item.id, dur*2);
-            }
-        }
+        
+        // TODO: dont allow overlapping connectors (maybe allow only one hop?)
+        gGraph = new DiGraph();
+        gGraph.addPath([1,2,3,4]);
+        gGraph.addPath([5,3,4]);
+        gGraph.addPath([6,1,2,5,4]);
+        new DiFlowChart("canvas1", gGraph).draw();
+        
+        
+        gGraph = new DiGraph();
+        gGraph.addPaths([
+            [1,2,3,4],
+            [5,3,4]
+        ]);
+        new DiFlowChart("canvas2", gGraph).draw();
+        
+        
+        
+        
+        //df = new flowjs("canvas4", d);
+        //df.draw();
+        
+        // for(var i=0;i<d.length; i++){
+        //     var row = d[i];
+        //     for(var k=0; k<row.length; k++){
+        //         var item = row[k];
+        //         var dur = Math.random() * 1000 * 10;
+        //         simulateLoading(item.id, dur);
+        //         simulateDoneLoading(item.id, dur*2);
+        //     }
+        // }
         
         function simulateLoading(itemId, timeout){
             setTimeout(function(){
