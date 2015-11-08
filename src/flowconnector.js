@@ -21,7 +21,6 @@ flowConnector.prototype.generateLine = function(line, pointA, pointB){
 };
 
 flowConnector.prototype.generateDot = function(pointShape, point){
-    console.log("point", pointShape, point);
     pointShape.graphics.beginFill(this.color).drawCircle(point.x, point.y, this.strokeWidth/2);
     pointShape.alpha = this.alpha;
     return pointShape;

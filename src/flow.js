@@ -19,7 +19,6 @@ function flowjs(canvasId, flowStructure){
     this.startY = this.height / 2;
     
     this.flowItems = {};
-    this.flowConnectors = {};
     
     this.stage.canvas.style.background = this.background;
     
@@ -149,7 +148,6 @@ flowjs.prototype.submitItems = function(){
         var connectors = this.flowItems[key].connectors;
         if(connectors !== undefined){
             connectors.forEach(function(conn){
-                console.log("key", key, conn);
                 conn.getDrawableItems().forEach(function(shape){
                     connetorShapes.push(shape);
                 })
