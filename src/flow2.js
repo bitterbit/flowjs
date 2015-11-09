@@ -1,4 +1,6 @@
 function DiFlowChart(canvasId, gGraph){
+    console.log("NEW FLOW CHART");
+    
     this.stage = new createjs.Stage(canvasId);
     this.stage.enableMouseOver(5);
     this.graph = gGraph;
@@ -29,15 +31,13 @@ DiFlowChart.prototype.draw = function(){
     
     var usedSpots = {};
     
-    console.log("started drawing. graph:", this.graph, this);
-  
+
   
     var drawNode = function(node){
         var usedCount = usedSpots[node.rank] || 0;
         usedSpots[node.rank] = usedCount + 1;
         
-        var flowItem = this._createItem(node, node.rank, gGraph.getRankSize(node.rank), usedCount);
-        console.log("drawing Node", flowItem.flowItem, "rank", node.rank, "usedCount", usedCount, "id", node.id);
+        var flowItem = this._createItem(node, node.rank, this.graph.getRankSize(node.rank), usedCount);
         this.flowItems[node.id] = flowItem;
     };
     
@@ -55,8 +55,10 @@ DiFlowChart.prototype.draw = function(){
         this.flowItems[node.id] = currentFlowItem;
     };
     
-    this.graph.forEach(drawNode, this);
-    this.graph.forEach(drawConnections, this);
+    var walker = new GraphWalker(this.graph);
+    walker.forEach(drawNode, this);
+    walker.forEach(drawConnections, this);
+    
     this.submitItems();
 };
 
