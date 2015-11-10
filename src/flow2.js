@@ -36,6 +36,7 @@ DiFlowChart.prototype.draw = function(){
     }, this);
     
     walker.forEach(this._fixLongConnections, this);
+    walker.forEach(this._balancePoints, this);
     walker.forEach(this._drawNodeConnections, this);
     
     this.submitItems();
@@ -63,6 +64,7 @@ DiFlowChart.prototype._drawNodeConnections = function(node){
     
     this.flowItems[node.id] = currentFlowItem;
 };
+
 
 DiFlowChart.prototype._fixLongConnections = function(node){
     node.next.each(function(nextId){
@@ -107,7 +109,53 @@ DiFlowChart.prototype._fixLongConnections = function(node){
     }, this);
 };
 
-
+DiFlowChart.prototype._balancePoints = function(node){
+    var that = this;
+    
+    var getFlowItem = function(nodeId){
+        return that.flowItems[nodeId].flowItem;
+    };
+    
+    var getNodeAvgPrevY = function(node){
+        var avgPrevY = 0;
+        node.callers.each(function(prevId){ avgPrevY = getFlowItem(prevId).y; }, that);    
+        return avgPrevY / node.callers.size();
+    };
+    
+    var shouldSwap = function(nodeA, nodeB){
+        if (nodeA.id === nodeB.id){
+            return false;
+        }
+        
+        var yDiff =             Math.abs(getFlowItem(nodeA.id).y - getNodeAvgPrevY(nodeA));
+        var potentialYDiff =    Math.abs(getFlowItem(nodeB.id).y - getNodeAvgPrevY(nodeA));
+        
+        // dont swap, not better
+        if (yDiff <= potentialYDiff){
+            return false;
+        }
+        
+        return true;
+    };
+    
+    
+    var potentialSwappers = this.graph.getNodesWithRank(node.rank);
+    
+    potentialSwappers.forEach(function(potSwapperNode){
+        if (!shouldSwap(node, potSwapperNode) || !shouldSwap(potSwapperNode, node)){
+            return;
+        }
+                
+        // swap the two items
+        var flowItem = getFlowItem(node.id);
+        var otherFlowItem = getFlowItem(potSwapperNode.id);
+        
+        var tmpY = otherFlowItem.y;
+        otherFlowItem.y = flowItem.y;
+        flowItem. y = tmpY;
+        
+    }, this);
+};
 
 
 DiFlowChart.prototype._createItem = function(node, rowNum, rowItemCount, rowUsedSpots){
