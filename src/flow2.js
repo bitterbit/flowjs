@@ -28,39 +28,86 @@ function DiFlowChart(canvasId, gGraph){
 
 
 DiFlowChart.prototype.draw = function(){
-    
     var usedSpots = {};
-    
-
-  
-    var drawNode = function(node){
-        var usedCount = usedSpots[node.rank] || 0;
-        usedSpots[node.rank] = usedCount + 1;
-        
-        var flowItem = this._createItem(node, node.rank, this.graph.getRankSize(node.rank), usedCount);
-        this.flowItems[node.id] = flowItem;
-    };
-    
-    var drawConnections = function(node){
-        var currentFlowItem = this.flowItems[node.id];
-        
-        node.next.each(function(nextNodeId){
-            var nextFlowItem = this.flowItems[nextNodeId].flowItem; 
-            var connector = this._createConnector(currentFlowItem.flowItem, nextFlowItem);
-            currentFlowItem.connectors = currentFlowItem.connectors || [];
-            currentFlowItem.connectors.push(connector);
-            
-        }, this);
-        
-        this.flowItems[node.id] = currentFlowItem;
-    };
-    
     var walker = new GraphWalker(this.graph);
-    walker.forEach(drawNode, this);
-    walker.forEach(drawConnections, this);
+    
+    walker.forEach(function(node){
+        usedSpots = this._drawNode(node, usedSpots);
+    }, this);
+    
+    walker.forEach(this._fixLongConnections, this);
+    walker.forEach(this._drawNodeConnections, this);
     
     this.submitItems();
 };
+
+DiFlowChart.prototype._drawNode = function(node, usedSpots){
+    var usedCount = usedSpots[node.rank] || 0;
+    usedSpots[node.rank] = usedCount + 1;
+    
+    var flowItem = this._createItem(node, node.rank, this.graph.getRankSize(node.rank), usedCount);
+    this.flowItems[node.id] = flowItem;
+    return usedSpots;
+};
+
+DiFlowChart.prototype._drawNodeConnections = function(node){
+    var currentFlowItem = this.flowItems[node.id];
+        
+    node.next.each(function(nextNodeId){
+        var nextFlowItem = this.flowItems[nextNodeId].flowItem; 
+        var connector = this._createConnector(currentFlowItem.flowItem, nextFlowItem);
+        currentFlowItem.connectors = currentFlowItem.connectors || [];
+        currentFlowItem.connectors.push(connector);
+        
+    }, this);
+    
+    this.flowItems[node.id] = currentFlowItem;
+};
+
+DiFlowChart.prototype._fixLongConnections = function(node){
+    node.next.each(function(nextId){
+        var nextNode = this.graph.getNode(nextId);
+        var distance = nextNode.rank - node.rank;
+        if (distance > 1){
+            console.log("long distance reletaionship", node.id, nextNode.id, "how long?", distance);
+            
+            // how tall is this long connections?
+            var startFlowItem = this.flowItems[node.id].flowItem;
+            var endFlowItem = this.flowItems[nextNode.id].flowItem;
+            var maxY = Math.max(startFlowItem.y, endFlowItem.y);
+            var minY = Math.min(startFlowItem.y, endFlowItem.y);
+            var height = maxY - minY;
+            
+            console.log("things", minY, maxY, height, startFlowItem, endFlowItem);
+            
+            
+            // get all nodes in the effected x's (rank)
+            var affectedNodes = [];
+            for (var i=node.rank+1; i<nextNode.rank; i++){
+                affectedNodes = affectedNodes.concat(this.graph.getNodesWithRank(i));
+            }
+            
+            console.log("affected nodes", affectedNodes);
+            
+            // fix node positions
+            affectedNodes.forEach(function(node){
+                var flowItem = this.flowItems[node.id].flowItem;
+                
+                // above the long line, move up
+                if (flowItem.y < maxY){
+                    flowItem.y -= height*1.25;
+                }
+                // below the long line, move down
+                else {
+                    flowItem.y += height*0.75;
+                }
+                
+            }, this);
+        }
+    }, this);
+};
+
+
 
 
 DiFlowChart.prototype._createItem = function(node, rowNum, rowItemCount, rowUsedSpots){
@@ -94,14 +141,18 @@ DiFlowChart.prototype.submitItems = function(){
     var pointShapes = [];
     
     for (var key in this.flowItems){
-        var flowShapes = this.flowItems[key].flowItem.getDrawableItems();
+        var flowItem = this.flowItems[key].flowItem;
+        var flowShapes = flowItem.getDrawableItems();
         flowShapes.forEach(function(shape){
             pointShapes.push(shape);
         });
         
+        flowItem.refresh();
+        
         var connectors = this.flowItems[key].connectors;
         if(connectors !== undefined){
             connectors.forEach(function(conn){
+                conn.refresh();
                 conn.getDrawableItems().forEach(function(shape){
                     connetorShapes.push(shape);
                 })

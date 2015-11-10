@@ -25,16 +25,22 @@ DiGraph.prototype.getNode = function(id){
     return this._nodes[id];
 };
 
-DiGraph.prototype.getBeginnings = function(){
-    var begginnings = [];
-    for (var key in this._nodes){
-        var node = this._nodes[key];
-        if (node.getCallCount() === 0){
-            begginnings.push(node);
-        }
+DiGraph.prototype.getNodesWithRank = function(rank){
+    var wantedNodes = [];
+    var walker = new GraphWalker(this);
+    
+    // nothing to look for here ...
+    if (this.getRankSize(rank) == 0){
+        return wantedNodes;
     }
     
-    return begginnings;
+    walker.forEach(function(node){
+        if (node.rank == rank){
+            wantedNodes.push(node);
+        }
+    }, this);
+    
+    return wantedNodes;
 };
 
 DiGraph.prototype.getLongestLength = function(){
@@ -138,8 +144,6 @@ DiGraph.prototype._organize = function(){
     
     // returns true if shifted the given node forward (ignores the shift status of the nodes before it)
     var tryShiftNodesForward = function(node){
-        console.log("trying to shift", node.id, node);
-        
         var minDiff;
         
         // get min diff from this node to all its next nodes
@@ -156,7 +160,6 @@ DiGraph.prototype._organize = function(){
         // there is a connection that has a diff of 1
         // nowhere to move this node forward 
         if (minDiff <= 1){
-            console.log("could not shift node forward");
             return false;
         }
         
@@ -167,8 +170,6 @@ DiGraph.prototype._organize = function(){
         node.callers.each(function(prevNodeId){
             tryShiftNodesForward(that.getNode(prevNodeId));
         }, that);
-        
-        console.log("shifted forawrd", node.id, node);
         
         return true;
     };
