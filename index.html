@@ -23,51 +23,31 @@
     function func(){
         console.log("LOADED");
         
-        var a = [ 
-            [{id: "The Collector C", next: ["Groot"]}],
-            [{id: "Groot", next: ["Peter Quill"]}],
-            [{id: "Peter Quill", next: ["Drax"]}],
-            [{id: "Drax", next: undefined}]
-        ];
-        
-        var b = [ 
-            [{id: "The Collector A", next: ["Meredith Quill"]}, {id:"z1", empty: true, next: undefined}, {id: "The Collector B", next:["Peter Quill Y", "Peter Quill X"]}],
-            [{id: "Meredith Quill", next: ["Drax"]}, {id: "Peter Quill X", next: ["Drax"]}, {id: "Peter Quill Y", next: ["Drax"]} ],
-            [{id: "Drax", next: undefined}]
-        ];
-        
-        var c = [ 
-            [{id: "The Collector C", next: ["Nebula B"]}, {id: "Peter Quill", next:["Nebula A"]}],
-            [{id: "Nebula B", next: ["Drax"]}, {id: "Nebula A", next: ["Drax"]}],
-            [{id: "Drax", next: undefined}]
-        ];
-        
-        var d = [ 
-            [{id: "Rocket", next: ["Ronan"]}],
-            [{id: "Ronan", next: ["Korath", "Peter Quill", "Peter Quill X", "Peter Quill Y", "Meredith Quill"]}],
-            [{id: "Korath", next: ["Groot", "z1", "z2"]}, {id: "Peter Quill"},  {id: "Peter Quill X"},  {id: "Peter Quill Y"}, {id: "Meredith Quill"}],
-            [{id: "Groot"}, {id:"z1", empty: true}, {id:"z2", empty: true}, {id:"z3", empty: true}, {id:"z4", empty: true}]
-        ];
-        
-        
-        
-        //new flowjs("canvas1", a).draw();
-        //new flowjs("canvas2", b).draw();
-        // new flowjs("canvas3", c).draw();
-        
         
         // TODO: dont allow overlapping connectors (maybe allow only one hop?)
-        gGraph = new DiGraph();
-        gGraph.addPath([1,2,3,4]);
-        gGraph.addPath([5,3,4]);
-        gGraph.addPath([6,1,2,5,4]);
-        new DiFlowChart("canvas1", gGraph).draw();
+        g = new DiGraph();
+        // g.addPaths([
+        //     [1,2,3],
+        //     [1,2,4,3],
+        //     [1,2,5,3]
+        //     //[1,2,6,3]
+        // ]);
+        g.addPath([1,7,8,9]);
+        g.addPath([1,2,3]);
+        g.addPath([1,2,4,3]);
+        g.addPath([1,2,5,3]);
+        
+        new DiFlowChart("canvas1", g).draw();
         
         
         gGraph = new DiGraph();
         gGraph.addPaths([
             [1,2,3,4],
-            [5,3,4]
+            [5,3,4],
+            [13,6,4],
+            //[10, 11, 6],
+            //[10, 12, 6]
+            // [7,4,9]
         ]);
         new DiFlowChart("canvas2", gGraph).draw();
         
