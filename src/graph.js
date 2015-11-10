@@ -1,7 +1,7 @@
 
 function DiGraph(){
     this._nodes = {};
-    this._cacheRankCount = {};
+    this._cacheRankCount = {}; // a mapping between rank level to # of nodes in that rank
     this._longestPathLength = 0;
 }
 
@@ -47,9 +47,14 @@ DiGraph.prototype.getRankSize = function(rankNum){
 
 
 DiGraph.prototype._refreshMeta = function(){
+    /**
+     * 1. rank all nodes
+     * 2. fix ranking (move unneseccery long items closer together)
+     * 3. cache the mapping between rank level to # of nodes in that rank
+    */
     this._longestPathLength = this._rankNodes();
-    this._cacheRankCount = this._getRankCount();
     this._organize();
+    this._cacheRankCount = this._getRankCount();
 };
 
 DiGraph.prototype._addPath = function(path){
@@ -115,6 +120,7 @@ DiGraph.prototype._rankNodes = function(){
     return counter-1;
 };
 
+// Calculate the number of nodes in each #rank 
 DiGraph.prototype._getRankCount = function(){
     var rankCount = {};
     for (var key in this._nodes){
@@ -130,27 +136,42 @@ DiGraph.prototype._organize = function(){
     var that = this;
     var walker = new GraphWalker(this);
     
+    // returns true if shifted the given node forward (ignores the shift status of the nodes before it)
     var tryShiftNodesForward = function(node){
-        var forefathers = walker.getForefathers(node);
-        if (forefathers.length === 0){
-            console.log("CAN DO!");
-            return true;
-            // can do!
-        }
-        return false;
+        console.log("trying to shift", node.id, node);
         
-    };
-    
-    var makeUpForLongLine = function(startRank, endRank){
-        console.log("making up for long line", startRank, endRank);
-        for(var i=startRank+1; i < endRank; i++){
-            var count = that._cacheRankCount[i] || 0;
-            console.log("index", i, "before", that._cacheRankCount[i]);
-            that._cacheRankCount[i] = count*2;
-            console.log("index", i, "count", that._cacheRankCount[i]);
+        var minDiff;
+        
+        // get min diff from this node to all its next nodes
+        node.next.each(function(nextId){
+            var nextNode = that.getNode(nextId);
+            var diff = nextNode.rank - node.rank;
+            if (minDiff === undefined){
+                minDiff = diff;
+            } else {
+                minDiff = Math.min(minDiff, diff); 
+            }
+        }, that);
+        
+        // there is a connection that has a diff of 1
+        // nowhere to move this node forward 
+        if (minDiff <= 1){
+            console.log("could not shift node forward");
+            return false;
         }
+        
+        // shift this node forawrd
+        node.rank += minDiff - 1;
+        
+        // try to shift all of its children
+        node.callers.each(function(prevNodeId){
+            tryShiftNodesForward(that.getNode(prevNodeId));
+        }, that);
+        
+        console.log("shifted forawrd", node.id, node);
+        
+        return true;
     };
-    
     
     walker.forEach(function(node){
         
@@ -159,18 +180,20 @@ DiGraph.prototype._organize = function(){
             var distance = nextNode.rank - node.rank;
             
             if (distance > 1){
-                var successful = tryShiftNodesForward(node);
-                if (!successful){
-                    console.log("making up for nodes: ", node, nextNode);
-                    makeUpForLongLine(node.rank, nextNode.rank);
-                }
+                tryShiftNodesForward(node);
             }
         }, this);
         
     }, this);  
 };
 
+
+
+/* ----------------------------------------------------*/
 /* ---------------------- WALKER ----------------------*/
+/* ----------------------------------------------------*/
+
+
 
 function GraphWalker(graph){
     this.graph = graph;
@@ -222,7 +245,11 @@ GraphWalker.prototype.getForefathers = function(node){
 };
 
 
+
+/* ----------------------------------------------------*/
 /* ----------------------- NODE -----------------------*/
+/* ----------------------------------------------------*/
+
 
 
 function Node(id, data){
@@ -248,7 +275,10 @@ Node.prototype._addCaller = function(node){
 };
 
 
-/* ----------------------- SET -----------------------*/
+
+/* ----------------------------------------------------*/
+/* ----------------------- SET ------------------------*/
+/* ----------------------------------------------------*/
 
 
 
