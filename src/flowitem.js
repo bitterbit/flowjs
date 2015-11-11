@@ -111,12 +111,3 @@ flowjsItem.prototype._getLoadingAnimation = function(){
     anim.setPaused(true);
     return anim;
 };
-
-
-function flowjsItemEmpty(x, y, radius){
-    flowjsItem.call(this, x, y, undefined, radius);
-    this.alpha = 0;
-    this.empty = true;
-}
-
-flowjsItemEmpty.prototype = flowjsItem.prototype;

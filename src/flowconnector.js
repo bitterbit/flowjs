@@ -65,12 +65,3 @@ flowConnector.prototype.refresh = function(){
 flowConnector.prototype.getDrawableItems = function(){
     return this.lines.concat(this.dots);
 };
-
-
-function flowConnectorEmpty(xa, ya, xb, yb) {
-    flowConnector.call(this, xa, ya, xb, yb);
-    this.alpha = 0;
-    this.empty = true;
-}
-
-flowConnectorEmpty.prototype = flowConnector.prototype;
