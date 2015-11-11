@@ -65,7 +65,23 @@ flowjsItem.prototype.refresh = function(){
 };
 
 flowjsItem.prototype.getLocation = function(){
-    return {x: this.x + this.radius, y: this.y + this.radius};
+    return {x: this.getX(), y: this.getY()};
+};
+
+flowjsItem.prototype.getX = function(){
+    return this.x + this.radius;
+};
+
+flowjsItem.prototype.getY = function(){
+    return this.y + this.radius;
+};
+
+flowjsItem.prototype.setX = function(x){
+    this.x = x - this.radius;
+};
+
+flowjsItem.prototype.setY = function(y){
+    this.y = y - this.radius;  
 };
 
 flowjsItem.prototype.updateShape = function(){
@@ -95,12 +111,3 @@ flowjsItem.prototype._getLoadingAnimation = function(){
     anim.setPaused(true);
     return anim;
 };
-
-
-function flowjsItemEmpty(x, y, radius){
-    flowjsItem.call(this, x, y, undefined, radius);
-    this.alpha = 0;
-    this.empty = true;
-}
-
-flowjsItemEmpty.prototype = flowjsItem.prototype;

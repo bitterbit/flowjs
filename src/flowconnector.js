@@ -12,6 +12,7 @@ function flowConnector(xa, ya, xb, yb) {
 }
 
 flowConnector.prototype.generateLine = function(line, pointA, pointB){
+    line.graphics.clear();
     line.graphics.setStrokeStyle(this.strokeWidth)
         .beginStroke(this.color)
         .moveTo(pointA.x, pointA.y)
@@ -21,6 +22,7 @@ flowConnector.prototype.generateLine = function(line, pointA, pointB){
 };
 
 flowConnector.prototype.generateDot = function(pointShape, point){
+    pointShape.graphics.clear();
     pointShape.graphics.beginFill(this.color).drawCircle(point.x, point.y, this.strokeWidth/2);
     pointShape.alpha = this.alpha;
     return pointShape;
@@ -63,12 +65,3 @@ flowConnector.prototype.refresh = function(){
 flowConnector.prototype.getDrawableItems = function(){
     return this.lines.concat(this.dots);
 };
-
-
-function flowConnectorEmpty(xa, ya, xb, yb) {
-    flowConnector.call(this, xa, ya, xb, yb);
-    this.alpha = 0;
-    this.empty = true;
-}
-
-flowConnectorEmpty.prototype = flowConnector.prototype;

@@ -1,8 +1,10 @@
-function flowjs(canvasId, flowStructure){
+function DiFlowChart(canvasId, gGraph){
+    console.log("NEW FLOW CHART");
+    
     this.stage = new createjs.Stage(canvasId);
     this.stage.enableMouseOver(5);
-    
-    this.flowStructure = flowStructure;
+    this.graph = gGraph;
+    this.flowItems = {};
     
     this.width = this.stage.canvas.width;
     this.height = this.stage.canvas.height;
@@ -15,118 +17,234 @@ function flowjs(canvasId, flowStructure){
     this.color = "purple";
     this.background = "white";
     
-    this.startX = (this.width/2) - ((this.flowStructure.length-1)*(this.xJumpSize)/2);
+    this.startX = (this.width/2) - ((this.graph.getLongestLength()-1)*(this.xJumpSize)/2);
     this.startY = this.height / 2;
-    
-    this.flowItems = {};
-    
+
     this.stage.canvas.style.background = this.background;
     
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", this.stage);
-    
-    // var thatStage = this.stage;
-    // this.onItemUpdate = function(){
-    //     thatStage.update();
-    // };
 }
 
 
-flowjs.prototype.draw = function(){
-    var firstRow = this.flowStructure[0];
-    for(var i=0; i<firstRow.length; i++){
-        var item = firstRow[i];
-        this.flowItems[item.id] = this._createItem(item, 0, firstRow.length, i);
-        this.drawFlowPathRecursive(this.flowItems[item.id], 1);
-    }
+DiFlowChart.prototype.draw = function(){
+    var usedSpots = {};
+    var walker = new GraphWalker(this.graph);
+    
+    walker.forEach(function(node){
+        usedSpots = this._drawNode(node, usedSpots);
+    }, this);
+    
+    walker.forEach(this._fixLongConnections, this);
+    walker.forEach(this._balancePoints, this);
+    walker.forEach(this._drawNodeConnections, this);
+    
+    // var length = this.graph.getLongestLength();
+    // for (var i=1; i<length; i++){
+    //     this._straighten_connections(i);
+    // }
+    
     this.submitItems();
 };
 
-
-flowjs.prototype.drawFlowPathRecursive = function(firstItem, rowNum){
-    // breaking rule
-    if (rowNum >= this.flowStructure.length){
-        return;
-    }
+DiFlowChart.prototype._drawNode = function(node, usedSpots){
+    var usedCount = usedSpots[node.rank] || 0;
+    usedSpots[node.rank] = usedCount + 1;
     
-    var firstShape = firstItem.flowItem;
-    var firstData = firstItem.data;
-    var nextRow = this.flowStructure[rowNum];
-    
-    var usedSpots = 0;
-    for (var i=0; i<nextRow.length; i++){
-        var itemData=nextRow[i];
-        if (this.flowItems[itemData.id] !== undefined){
-            usedSpots++;
-        }
-    }
-    
-    for (var i=0; i<nextRow.length; i++){
-        
-        var itemData=nextRow[i];
-        if (firstData.next === undefined || firstData.next.indexOf(itemData.id) == -1){
-            // do nothing, not the next item
-        } 
-        
-        // next item was already drawn, we shoud connect it but should not continue
-        else if (this.flowItems[itemData.id] !== undefined){
-            var nextFlowItem = this.flowItems[itemData.id].flowItem;
-            
-            var connector = this._createConnector(firstShape, nextFlowItem);
+    var flowItem = this._createItem(node, node.rank, this.graph.getRankSize(node.rank), usedCount);
+    this.flowItems[node.id] = flowItem;
+    return usedSpots;
+};
 
-            var connectors = this.flowItems[firstData.id].connectors || [];
-            connectors.push(connector);
-            this.flowItems[firstData.id].connectors = connectors;
-            
-            console.log("connected and stoped", firstData.id, "->", itemData.id);
-        }
+DiFlowChart.prototype._drawNodeConnections = function(node){
+    var currentFlowItem = this.flowItems[node.id];
         
-        // found next item, draw it and continue
-        else {
-            var nextFlowItem = this._createItem(itemData, rowNum, nextRow.length, usedSpots);
-            this.flowItems[itemData.id] = nextFlowItem;
-            usedSpots++;
-            
-            var connector = this._createConnector(firstShape, nextFlowItem.flowItem);
-            
-            var connectors = this.flowItems[firstData.id].connectors || [];
-            connectors.push(connector);
-            this.flowItems[firstData.id].connectors = connectors;
-
-            console.log("connected and contineuing",  firstData.id, "->", itemData.id);
-            
-            this.drawFlowPathRecursive(this.flowItems[itemData.id], rowNum+1);    
-        }
-    }
+    node.next.each(function(nextNodeId){
+        var nextFlowItem = this.flowItems[nextNodeId].flowItem; 
+        var connector = this._createConnector(currentFlowItem.flowItem, nextFlowItem);
+        currentFlowItem.connectors = currentFlowItem.connectors || [];
+        currentFlowItem.connectors.push(connector);
+        
+    }, this);
+    
+    this.flowItems[node.id] = currentFlowItem;
 };
 
 
-flowjs.prototype._createItem = function(data, rowNum, rowItemCount, rowUsedSpots){
+DiFlowChart.prototype._fixLongConnections = function(node){
+    node.next.each(function(nextId){
+        var nextNode = this.graph.getNode(nextId);
+        var distance = nextNode.rank - node.rank;
+        if (distance > 1){
+            console.log("long distance reletaionship", node.id, nextNode.id, "how long?", distance);
+            
+            // how tall is this long connections?
+            var startFlowItem = this.flowItems[node.id].flowItem;
+            var endFlowItem = this.flowItems[nextNode.id].flowItem;
+            var maxY = Math.max(startFlowItem.y, endFlowItem.y);
+            var minY = Math.min(startFlowItem.y, endFlowItem.y);
+            var height = maxY - minY;
+            
+            console.log("things", minY, maxY, height, startFlowItem, endFlowItem);
+            
+            
+            // get all nodes in the effected x's (rank)
+            var affectedNodes = [];
+            for (var i=node.rank+1; i<nextNode.rank; i++){
+                affectedNodes = affectedNodes.concat(this.graph.getNodesWithRank(i));
+            }
+            
+            console.log("affected nodes", affectedNodes);
+            
+            // fix node positions
+            affectedNodes.forEach(function(node){
+                var flowItem = this.flowItems[node.id].flowItem;
+                
+                // above the long line, move up
+                if (flowItem.y < maxY){
+                    flowItem.y -= height*1.25;
+                }
+                // below the long line, move down
+                else {
+                    flowItem.y += height*0.75;
+                }
+                
+            }, this);
+        }
+    }, this);
+};
+
+DiFlowChart.prototype._balancePoints = function(node){
+    var that = this;
+    
+    var shouldSwap = function(nodeA, nodeB){
+        if (nodeA.id === nodeB.id || nodeA.getCallCount() === 0 || nodeB.getCallCount() === 0){
+            return false;
+        }
+        
+        var avgPrevYA = that._getNodeAvgPrevY(nodeA);
+        var avgPrevYB = that._getNodeAvgPrevY(nodeB);
+        var yA = that._getFlowItem(nodeA.id).y;
+        var yB = that._getFlowItem(nodeB.id).y;
+        
+        if (yA > yB && avgPrevYB > avgPrevYA) {
+            return true;
+        } else if (yB > yA && avgPrevYA > avgPrevYB){
+            return true;
+        }
+        
+        return false;
+    };
+    
+    var potentialSwappers = this.graph.getNodesWithRank(node.rank);
+    
+    potentialSwappers.forEach(function(potSwapperNode){
+        // do somthing with unhuamful swaps on first nodes
+        if (!shouldSwap(node, potSwapperNode)){
+            return;
+        }
+        
+        console.log("swapping", node.id, potSwapperNode.id);
+                
+        // swap the two items
+        var flowItem = this._getFlowItem(node.id);
+        var otherFlowItem = this._getFlowItem(potSwapperNode.id);
+        
+        var tmpY = otherFlowItem.y;
+        otherFlowItem.y = flowItem.y;
+        flowItem. y = tmpY;
+        
+    }, this);
+};
+
+DiFlowChart.prototype._straighten_connections = function(x){
+    var nodes = this.graph.getNodesWithRank(x);
+    var flowItemBundles = [];
+    
+    nodes.forEach(function(node){
+        flowItemBundles.push(this.flowItems[node.id]);
+    }, this);
+    
+    flowItemBundles.sort(function(flowItemA, flowItemB){
+        return flowItemA.flowItem.y - flowItemB.flowItem.y;
+    });
+    
+    var moveFlowItemsBy = function(flowItemBundels, yDelta) {
+        flowItemBundels.forEach(function(flowBundle){
+            console.log("moving", flowBundle.node.id, "by", yDelta, "affectedNodes", flowItemBundels);
+            flowBundle.flowItem.y += yDelta;
+            var connectors = flowBundle.connectors || [];
+            connectors.forEach(function(conn){conn.ya += yDelta; });
+            
+        }, this);
+    };
+    
+    flowItemBundles.forEach(function(flowItemBundle, index){
+        if (flowItemBundle.node.getCallCount() === 0){
+            return;
+        }
+        
+        var flowItem = flowItemBundle.flowItem;
+        var avgPrevY = this._getNodeAvgPrevY(flowItemBundle.node);
+        var diff = avgPrevY - flowItem.y;
+        
+        console.log("diff", diff, avgPrevY, flowItem.y);
+        
+        // almost in the middle, make it the middle (it wont hurt)
+        // no need to move the others?
+        if(Math.abs(diff) <= flowItem.radius){
+            console.log("COOL", flowItemBundle.node.id);
+            flowItem.y = avgPrevY;
+            return;
+        }
+        
+        // if diff positive: current item is above the avg of his callers. move it down!
+        // else:             current item is below the avg of his callers. move it up!
+        
+        var itemsToMove = [];
+        if (diff > 0){
+            itemsToMove = flowItemBundles.slice(index); // current item and all the next items
+        } else {
+            itemsToMove = flowItemBundles.slice(0, index+1); // current item and all the next items
+        }
+        moveFlowItemsBy(itemsToMove, -diff);
+        
+    }, this);
+};
+
+DiFlowChart.prototype._getFlowItem = function(nodeId){
+    return this.flowItems[nodeId].flowItem;
+};
+    
+DiFlowChart.prototype._getNodeAvgPrevY = function(node){
+    if (node.getCallCount() === 0){
+        throw new Error("cant find the avarge previous y of no previous items. node="+node.id);
+    }
+    
+    var avgPrevY = 0;
+    node.callers.each(function(prevId){ avgPrevY += this._getFlowItem(prevId).y; }, this);    
+    return avgPrevY / node.callers.size();
+};
+
+
+DiFlowChart.prototype._createItem = function(node, rowNum, rowItemCount, rowUsedSpots){
     var offset = ((rowItemCount-1) * (this.yJumpSize/2));
     var y = this.startY - this.itemRadius - offset + (rowUsedSpots * this.yJumpSize);
     var x = this.startX + (rowNum*this.xJumpSize);
-    
-    if(data.empty !== undefined && data.empty === true){
-        var flowItem = new flowjsItemEmpty(x, y, this.itemRadius);
-    } else {
-        var flowItem = new flowjsItem(x, y, data.id, this.itemRadius, this.onItemUpdate);
-    }
-    
+
+    var flowItem = new flowjsItem(x, y, node.id, this.itemRadius, this.onItemUpdate);
     flowItem.color = this.color;
     flowItem.background = this.background;
     flowItem.refresh();
-    return {data: data, flowItem: flowItem};
+    
+    return {node: node, flowItem: flowItem};
 };
 
-flowjs.prototype._createConnector = function(itemA, itemB){
+DiFlowChart.prototype._createConnector = function(itemA, itemB){
     var start = itemA.getLocation();
     var end = itemB.getLocation();
     
-    if((itemA.empty !== undefined && itemA.empty) || (itemB.empty !== undefined && itemB.empty)){
-        var connector = new flowConnectorEmpty(start.x, start.y, end.x, end.y);
-    } else {
-        var connector = new flowConnector(start.x, start.y, end.x, end.y);
-    }
+    var connector = new flowConnector(start.x, start.y, end.x, end.y);
     
     connector.color = this.color;
     connector.strokeWidth = this.lineWidth;
@@ -135,19 +253,23 @@ flowjs.prototype._createConnector = function(itemA, itemB){
 };
 
 
-flowjs.prototype.submitItems = function(){
+DiFlowChart.prototype.submitItems = function(){
     var connetorShapes = [];
     var pointShapes = [];
     
     for (var key in this.flowItems){
-        var flowShapes = this.flowItems[key].flowItem.getDrawableItems();
+        var flowItem = this.flowItems[key].flowItem;
+        var flowShapes = flowItem.getDrawableItems();
         flowShapes.forEach(function(shape){
             pointShapes.push(shape);
         });
         
+        flowItem.refresh();
+        
         var connectors = this.flowItems[key].connectors;
         if(connectors !== undefined){
             connectors.forEach(function(conn){
+                conn.refresh();
                 conn.getDrawableItems().forEach(function(shape){
                     connetorShapes.push(shape);
                 })
@@ -169,7 +291,7 @@ flowjs.prototype.submitItems = function(){
 
 /*  Update a flow item properties. 
     The given function will be called and will be passed the flow item object */
-flowjs.prototype.updateItem = function(itemId, func){
+DiFlowChart.prototype.updateItem = function(itemId, func){
     var item = this.flowItems[itemId];
     if(item === undefined){
         return;
