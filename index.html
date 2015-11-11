@@ -1,12 +1,10 @@
 <head>
     <script type="text/javascript" src="lib/createjs-2015.05.21.min.js"></script>
     <script type="text/javascript" src="src/flow.js"></script>
-    <script type="text/javascript" src="src/flow2.js"></script>
     <script type="text/javascript" src="src/flowitem.js"></script>
     <script type="text/javascript" src="src/flowconnector.js"></script>
     
     <script type="text/javascript" src="src/graph.js"></script>
-    
 </head>
 <body>
     <title>Gurdians of the flow charts</title>
@@ -23,54 +21,59 @@
     function func(){
         console.log("LOADED");
         
-        
-        // TODO: dont allow overlapping connectors (maybe allow only one hop?)
-        g = new DiGraph();
-        // g.addPaths([
-        //     [1,2,3],
-        //     [1,2,4,3],
-        //     [1,2,5,3]
-        //     //[1,2,6,3]
-        // ]);
-        g.addPath([1,7,8,9]);
-        g.addPath([1,2,3]);
-        g.addPath([1,2,4,3]);
-        g.addPath([1,2,5,3]);
-        g.addPath([5,10]);
-        
-        new DiFlowChart("canvas1", g).draw();
-        
-        
-        gGraph = new DiGraph();
-        gGraph.addPaths([
-            [1,2,3,4],
-            [5,3,4],
-            [13,6,4],
-            //[10, 11, 6],
-            //[10, 12, 6]
-            // [7,4,9]
+        var a = new DiGraph();
+        a.addPaths([
+            ["AA", "BB", "CC", "ZZ"],
+            ["DD", "CC"],
+            ["XX", "EE", "CC"],
+            ["FF", "CC"],
+            ["XX", "GG", "CC"]
         ]);
-        new DiFlowChart("canvas2", gGraph).draw();
         
+        var b = new DiGraph();
+        b.addPaths([
+            ["AA", "BB", "CC"],
+            ["DD", "EE", "CC"]
+        ]);
         
+        var c = new DiGraph();
+        c.addPaths([
+            ["AA", "BB"],
+            ["BB", "EE"],
+            ["BB", "FF"],
+            ["AA", "CC", "DD"]
+        ]);
         
+        var d = new DiGraph();
+        d.addPaths([
+            ["Peter Q", "Gamora", "Nova Prime", "Rocket"],
+            ["Drax", "Groot", "Rocket"],
+            ["Merdith Q", "Groot"]
+        ]);
         
-        //df = new flowjs("canvas4", d);
-        //df.draw();
+        new DiFlowChart("canvas1", a).draw();
+        new DiFlowChart("canvas2", b).draw();
+        new DiFlowChart("canvas4", d).draw();
         
-        // for(var i=0;i<d.length; i++){
-        //     var row = d[i];
-        //     for(var k=0; k<row.length; k++){
-        //         var item = row[k];
-        //         var dur = Math.random() * 1000 * 10;
-        //         simulateLoading(item.id, dur);
-        //         simulateDoneLoading(item.id, dur*2);
-        //     }
-        // }
+        var cf = new DiFlowChart("canvas3", c);
+        cf.draw();
+        simuLoad(cf, c);    
+    }
+    
+    
+    function simuLoad(flowChart, graph){
+        var walker = new GraphWalker(graph);
+        walker.forEach(function(node){
+            var start = Math.random() * 1000 * 5;
+            var dur = Math.random() * 1000 * 5;
+            simulateLoading(node.id, start);
+            simulateDoneLoading(node.id, start + dur);
+        }, this);
+        
         
         function simulateLoading(itemId, timeout){
             setTimeout(function(){
-                df.updateItem(itemId, function(item){
+                flowChart.updateItem(itemId, function(item){
                     item.flowItem.toggleFlashing();
                 });
             }, timeout);
@@ -79,7 +82,7 @@
         
         function simulateDoneLoading(itemId, timeout){
             setTimeout(function(){
-                df.updateItem(itemId, function(item){
+                flowChart.updateItem(itemId, function(item){
                     item.flowItem.toggleFlashing();
                     item.flowItem.color = "red";
                     if (item.connectors === undefined){return}
@@ -89,7 +92,6 @@
                 });
             }, timeout);
         }
-    
     }
         
     </script>
