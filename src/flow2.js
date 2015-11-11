@@ -39,6 +39,11 @@ DiFlowChart.prototype.draw = function(){
     walker.forEach(this._balancePoints, this);
     walker.forEach(this._drawNodeConnections, this);
     
+    // var length = this.graph.getLongestLength();
+    // for (var i=1; i<length; i++){
+    //     this._straighten_connections(i);
+    // }
+    
     this.submitItems();
 };
 
@@ -112,49 +117,113 @@ DiFlowChart.prototype._fixLongConnections = function(node){
 DiFlowChart.prototype._balancePoints = function(node){
     var that = this;
     
-    var getFlowItem = function(nodeId){
-        return that.flowItems[nodeId].flowItem;
-    };
-    
-    var getNodeAvgPrevY = function(node){
-        var avgPrevY = 0;
-        node.callers.each(function(prevId){ avgPrevY = getFlowItem(prevId).y; }, that);    
-        return avgPrevY / node.callers.size();
-    };
-    
     var shouldSwap = function(nodeA, nodeB){
-        if (nodeA.id === nodeB.id){
+        if (nodeA.id === nodeB.id || nodeA.getCallCount() === 0 || nodeB.getCallCount() === 0){
             return false;
         }
         
-        var yDiff =             Math.abs(getFlowItem(nodeA.id).y - getNodeAvgPrevY(nodeA));
-        var potentialYDiff =    Math.abs(getFlowItem(nodeB.id).y - getNodeAvgPrevY(nodeA));
+        var avgPrevYA = that._getNodeAvgPrevY(nodeA);
+        var avgPrevYB = that._getNodeAvgPrevY(nodeB);
+        var yA = that._getFlowItem(nodeA.id).y;
+        var yB = that._getFlowItem(nodeB.id).y;
         
-        // dont swap, not better
-        if (yDiff <= potentialYDiff){
-            return false;
+        if (yA > yB && avgPrevYB > avgPrevYA) {
+            return true;
+        } else if (yB > yA && avgPrevYA > avgPrevYB){
+            return true;
         }
         
-        return true;
+        return false;
     };
-    
     
     var potentialSwappers = this.graph.getNodesWithRank(node.rank);
     
     potentialSwappers.forEach(function(potSwapperNode){
-        if (!shouldSwap(node, potSwapperNode) || !shouldSwap(potSwapperNode, node)){
+        // do somthing with unhuamful swaps on first nodes
+        if (!shouldSwap(node, potSwapperNode)){
             return;
         }
+        
+        console.log("swapping", node.id, potSwapperNode.id);
                 
         // swap the two items
-        var flowItem = getFlowItem(node.id);
-        var otherFlowItem = getFlowItem(potSwapperNode.id);
+        var flowItem = this._getFlowItem(node.id);
+        var otherFlowItem = this._getFlowItem(potSwapperNode.id);
         
         var tmpY = otherFlowItem.y;
         otherFlowItem.y = flowItem.y;
         flowItem. y = tmpY;
         
     }, this);
+};
+
+DiFlowChart.prototype._straighten_connections = function(x){
+    var nodes = this.graph.getNodesWithRank(x);
+    var flowItemBundles = [];
+    
+    nodes.forEach(function(node){
+        flowItemBundles.push(this.flowItems[node.id]);
+    }, this);
+    
+    flowItemBundles.sort(function(flowItemA, flowItemB){
+        return flowItemA.flowItem.y - flowItemB.flowItem.y;
+    });
+    
+    var moveFlowItemsBy = function(flowItemBundels, yDelta) {
+        flowItemBundels.forEach(function(flowBundle){
+            console.log("moving", flowBundle.node.id, "by", yDelta, "affectedNodes", flowItemBundels);
+            flowBundle.flowItem.y += yDelta;
+            var connectors = flowBundle.connectors || [];
+            connectors.forEach(function(conn){conn.ya += yDelta; });
+            
+        }, this);
+    };
+    
+    flowItemBundles.forEach(function(flowItemBundle, index){
+        if (flowItemBundle.node.getCallCount() === 0){
+            return;
+        }
+        
+        var flowItem = flowItemBundle.flowItem;
+        var avgPrevY = this._getNodeAvgPrevY(flowItemBundle.node);
+        var diff = avgPrevY - flowItem.y;
+        
+        console.log("diff", diff, avgPrevY, flowItem.y);
+        
+        // almost in the middle, make it the middle (it wont hurt)
+        // no need to move the others?
+        if(Math.abs(diff) <= flowItem.radius){
+            console.log("COOL", flowItemBundle.node.id);
+            flowItem.y = avgPrevY;
+            return;
+        }
+        
+        // if diff positive: current item is above the avg of his callers. move it down!
+        // else:             current item is below the avg of his callers. move it up!
+        
+        var itemsToMove = [];
+        if (diff > 0){
+            itemsToMove = flowItemBundles.slice(index); // current item and all the next items
+        } else {
+            itemsToMove = flowItemBundles.slice(0, index+1); // current item and all the next items
+        }
+        moveFlowItemsBy(itemsToMove, -diff);
+        
+    }, this);
+};
+
+DiFlowChart.prototype._getFlowItem = function(nodeId){
+    return this.flowItems[nodeId].flowItem;
+};
+    
+DiFlowChart.prototype._getNodeAvgPrevY = function(node){
+    if (node.getCallCount() === 0){
+        throw new Error("cant find the avarge previous y of no previous items. node="+node.id);
+    }
+    
+    var avgPrevY = 0;
+    node.callers.each(function(prevId){ avgPrevY += this._getFlowItem(prevId).y; }, this);    
+    return avgPrevY / node.callers.size();
 };
 
 
