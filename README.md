@@ -1,2 +1,2 @@
-# flowjs
-a javascript library to display flow charts
+# FLOWJS
+a simple HTML5 flow chart using the canvas element. based on CreateJs
