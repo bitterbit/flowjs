@@ -1,6 +1,6 @@
 # FLOWJS
-a simple HTML5 flow chart using the canvas element. based on CreateJs
-
+Simple HTML5 flow chart using the canvas element. based on [CreateJs](http://createjs.com)
+No more complex graphs and endles zooming
 
 # Usage
 ``` javascript
