@@ -2,7 +2,6 @@
 a simple HTML5 flow chart using the canvas element. based on CreateJs
 
 
-
 # Usage
 ``` javascript
 var graph = new DiGraph();
@@ -15,7 +14,7 @@ graph.addPaths([
 new DiFlowChart("canvasID", graph).draw();
 ```
 
-
+![](https://github.com/bitterbit/flowjs/blob/master/flowchartimg.png)
 
 # License
 flowjs is available under the [MIT License](https://github.com/bitterbit/flowjs/blob/master/LICENSE.md)
