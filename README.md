@@ -6,6 +6,7 @@ No more complex graphs and endles zooming.
 This library is still work in progress, any contribution will be welcomed
 
 # Usage
+![flow chart example](https://github.com/bitterbit/flowjs/blob/master/flowchartimg.png)
 
 ## Imports
 ``` html
@@ -28,7 +29,6 @@ graph.addPaths([
 new flowjs.DiFlowChart("canvasID", graph).draw();
 ```
 
-![flow chart example](https://github.com/bitterbit/flowjs/blob/master/flowchartimg.png)
 
 
 # Advanced Usage
