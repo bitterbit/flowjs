@@ -8,7 +8,7 @@ This library is still work in progress, any contribution will be welcomed
 # Usage
 ![flow chart example](https://github.com/bitterbit/flowjs/blob/master/flowchartimg.png)
 
-## Imports
+
 ``` html
 <script type="text/javascript" src="lib/createjs-2015.05.21.min.js"></script>
 <script type="text/javascript" src="flow.min.js"></script>
@@ -17,7 +17,6 @@ This library is still work in progress, any contribution will be welcomed
 <canvas id="canvasID" width="500" height="300"></canvas>
 ```
 
-## Code 
 ``` javascript
 var graph = new flowjs.DiGraph();
 graph.addPaths([
