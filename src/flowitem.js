@@ -26,7 +26,7 @@ flowjs.flowItem = function flowItem(x, y, text, radius, listener){
     var that = this;
     var onclick = function(){
         console.log("click");   
-        window.open(this.link);
+        window.open(that.link);
     };
     
     var onmouseover = function(){
