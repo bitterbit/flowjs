@@ -1,11 +1,12 @@
 <head>
     <script type="text/javascript" src="lib/createjs-2015.05.21.min.js"></script>
-    <script type="text/javascript" src="flow.min.js"></script>
-    <!--<script type="text/javascript" src="src/flow.js"></script>-->
-    <!--<script type="text/javascript" src="src/flowitem.js"></script>-->
-    <!--<script type="text/javascript" src="src/flowconnector.js"></script>-->
+    <!--<script type="text/javascript" src="flow.min.js"></script>-->
     
+    <script type="text/javascript" src="src/flow.js"></script>
+    <script type="text/javascript" src="src/flowitem.js"></script>
+    <script type="text/javascript" src="src/flowconnector.js"></script>
     <script type="text/javascript" src="src/graph.js"></script>
+    
 </head>
 <body>
     <title>Gurdians of the flow charts</title>
@@ -17,12 +18,14 @@
     <canvas id="canvas4" width="500" height="300"></canvas>
     
     <script type="text/javascript">
+    /* global flowjs */
+    
     window.addEventListener("load", func);
     
     function func(){
         console.log("LOADED");
         
-        var a = new DiGraph();
+        var a = new flowjs.DiGraph();
         a.addPaths([
             ["A1", "A2"],
             ["A1", "B2"],
@@ -30,13 +33,13 @@
             ["B1", "A2"]
         ]);
         
-        var b = new DiGraph();
+        var b = new flowjs.DiGraph();
         b.addPaths([
             ["AA", "BB", "CC"],
             ["DD", "EE", "CC"]
         ]);
         
-        var c = new DiGraph();
+        var c = new flowjs.DiGraph();
         c.addPaths([
             ["AA", "BB"],
             ["BB", "EE"],
@@ -44,25 +47,27 @@
             ["AA", "CC", "DD"]
         ]);
         
-        var d = new DiGraph();
+        var d = new flowjs.DiGraph();
         d.addPaths([
             ["Peter Q", "Gamora", "Nova Prime", "Rocket"],
             ["Drax", "Groot", "Rocket"],
             ["Merdith Q", "Groot"]
         ]);
         
-        new DiFlowChart("canvas1", a).draw();
-        new DiFlowChart("canvas2", b).draw();
-        new DiFlowChart("canvas4", d).draw();
+        new flowjs.DiFlowChart("canvas1", a).draw();
+        new flowjs.DiFlowChart("canvas2", b).draw();
+        new flowjs.DiFlowChart("canvas4", d).draw();
         
-        var cf = new DiFlowChart("canvas3", c);
+        
+        // Advanced Example with loading animation
+        var cf = new flowjs.DiFlowChart("canvas3", c);
         cf.draw();
         simuLoad(cf, c);    
     }
     
     
     function simuLoad(flowChart, graph){
-        var walker = new GraphWalker(graph);
+        var walker = new flowjs.GraphWalker(graph);
         walker.forEach(function(node){
             var start = Math.random() * 1000 * 5;
             var dur = Math.random() * 1000 * 5;
@@ -85,7 +90,7 @@
                 flowChart.updateItem(itemId, function(item){
                     item.flowItem.toggleFlashing();
                     item.flowItem.color = "red";
-                    if (item.connectors === undefined){return}
+                    if (item.connectors === undefined){return;}
                     item.connectors.forEach(function(conn){
                        conn.color = "red"; 
                     });

@@ -1,4 +1,8 @@
-function flowConnector(xa, ya, xb, yb) {
+/* global createjs */
+
+var flowjs = flowjs || {};
+
+flowjs.flowConnector = function flowConnector(xa, ya, xb, yb) {
     this.color = "blue";
     this.alpha = 1;
     this.strokeWidth = 3;
@@ -9,9 +13,9 @@ function flowConnector(xa, ya, xb, yb) {
     this.xb = xb;
     this.yb = yb;
     
-}
+};
 
-flowConnector.prototype.generateLine = function(line, pointA, pointB){
+flowjs.flowConnector.prototype.generateLine = function(line, pointA, pointB){
     line.graphics.clear();
     line.graphics.setStrokeStyle(this.strokeWidth)
         .beginStroke(this.color)
@@ -21,14 +25,14 @@ flowConnector.prototype.generateLine = function(line, pointA, pointB){
     return line;
 };
 
-flowConnector.prototype.generateDot = function(pointShape, point){
+flowjs.flowConnector.prototype.generateDot = function(pointShape, point){
     pointShape.graphics.clear();
     pointShape.graphics.beginFill(this.color).drawCircle(point.x, point.y, this.strokeWidth/2);
     pointShape.alpha = this.alpha;
     return pointShape;
 };
 
-flowConnector.prototype.refresh = function(){
+flowjs.flowConnector.prototype.refresh = function(){
     var height = Math.abs(this.yb - this.ya);
     var width = Math.abs(this.xb - this.xa);
     
@@ -62,6 +66,6 @@ flowConnector.prototype.refresh = function(){
     }
 };
 
-flowConnector.prototype.getDrawableItems = function(){
+flowjs.flowConnector.prototype.getDrawableItems = function(){
     return this.lines.concat(this.dots);
 };

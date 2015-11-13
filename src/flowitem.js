@@ -1,4 +1,8 @@
-function flowjsItem(x, y, text, radius, listener){
+/* global createjs */
+
+var flowjs = flowjs || {};
+
+flowjs.flowItem = function flowItem(x, y, text, radius, listener){
     this.x = x;
     this.y = y;
     
@@ -43,10 +47,10 @@ function flowjsItem(x, y, text, radius, listener){
     this.circle.addEventListener("mouseover",       onmouseover);
     this.textShape.addEventListener("mouseover",    onmouseover);
     
-}
+};
 
-flowjsItem.prototype.refresh = function(){
-    this.circle.graphics.clear()
+flowjs.flowItem.prototype.refresh = function(){
+    this.circle.graphics.clear();
     this.circle.graphics.setStrokeStyle(this.strokeWidth).beginStroke(this.color).beginFill(this.background).drawCircle(0, 0, this.radius);
     this.circle.x = this.getLocation().x;
     this.circle.y = this.getLocation().y;
@@ -64,41 +68,41 @@ flowjsItem.prototype.refresh = function(){
     this.loadingAnimation = this.loadingAnimation || this._getLoadingAnimation();
 };
 
-flowjsItem.prototype.getLocation = function(){
+flowjs.flowItem.prototype.getLocation = function(){
     return {x: this.getX(), y: this.getY()};
 };
 
-flowjsItem.prototype.getX = function(){
+flowjs.flowItem.prototype.getX = function(){
     return this.x + this.radius;
 };
 
-flowjsItem.prototype.getY = function(){
+flowjs.flowItem.prototype.getY = function(){
     return this.y + this.radius;
 };
 
-flowjsItem.prototype.setX = function(x){
+flowjs.flowItem.prototype.setX = function(x){
     this.x = x - this.radius;
 };
 
-flowjsItem.prototype.setY = function(y){
+flowjs.flowItem.prototype.setY = function(y){
     this.y = y - this.radius;  
 };
 
-flowjsItem.prototype.updateShape = function(){
+flowjs.flowItem.prototype.updateShape = function(){
     this.refresh();
     this.listener();
 };
 
-flowjsItem.prototype.getDrawableItems = function(){
+flowjs.flowItem.prototype.getDrawableItems = function(){
     return [this.circle, this.textShape];
 };
 
-flowjsItem.prototype.toggleFlashing = function(){
+flowjs.flowItem.prototype.toggleFlashing = function(){
     var isPaused = this.loadingAnimation._paused;
     this.loadingAnimation.setPaused(!isPaused);
 };
 
-flowjsItem.prototype._getLoadingAnimation = function(){
+flowjs.flowItem.prototype._getLoadingAnimation = function(){
     var y = this.getLocation().y;
     var distance = this.radius/2;
 
@@ -106,7 +110,7 @@ flowjsItem.prototype._getLoadingAnimation = function(){
         // .to({ y: y}, 100,           createjs.Ease.getPowIn(2.2))
         .to({ y: y-distance}, 300,  createjs.Ease.getPowIn(2))
         .to({ y: y+distance}, 300,  createjs.Ease.getPowIn(2))
-        .to({ y: y}, 100)
+        .to({ y: y}, 100);
         // .wait(100);
     anim.setPaused(true);
     return anim;

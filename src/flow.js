@@ -1,6 +1,8 @@
-function DiFlowChart(canvasId, gGraph){
-    console.log("NEW FLOW CHART");
-    
+/* global createjs */
+
+var flowjs = flowjs || {};
+
+flowjs.DiFlowChart = function DiFlowChart(canvasId, gGraph){
     this.stage = new createjs.Stage(canvasId);
     this.stage.enableMouseOver(5);
     this.graph = gGraph;
@@ -24,12 +26,12 @@ function DiFlowChart(canvasId, gGraph){
     
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", this.stage);
-}
+};
 
 
-DiFlowChart.prototype.draw = function(){
+flowjs.DiFlowChart.prototype.draw = function(){
     var usedSpots = {};
-    var walker = new GraphWalker(this.graph);
+    var walker = new flowjs.GraphWalker(this.graph);
     
     walker.forEach(function(node){
         usedSpots = this._drawNode(node, usedSpots);
@@ -39,15 +41,10 @@ DiFlowChart.prototype.draw = function(){
     walker.forEach(this._balancePoints, this);
     walker.forEach(this._drawNodeConnections, this);
     
-    // var length = this.graph.getLongestLength();
-    // for (var i=1; i<length; i++){
-    //     this._straighten_connections(i);
-    // }
-    
     this.submitItems();
 };
 
-DiFlowChart.prototype._drawNode = function(node, usedSpots){
+flowjs.DiFlowChart.prototype._drawNode = function(node, usedSpots){
     var usedCount = usedSpots[node.rank] || 0;
     usedSpots[node.rank] = usedCount + 1;
     
@@ -56,7 +53,7 @@ DiFlowChart.prototype._drawNode = function(node, usedSpots){
     return usedSpots;
 };
 
-DiFlowChart.prototype._drawNodeConnections = function(node){
+flowjs.DiFlowChart.prototype._drawNodeConnections = function(node){
     var currentFlowItem = this.flowItems[node.id];
         
     node.next.each(function(nextNodeId){
@@ -71,7 +68,7 @@ DiFlowChart.prototype._drawNodeConnections = function(node){
 };
 
 
-DiFlowChart.prototype._fixLongConnections = function(node){
+flowjs.DiFlowChart.prototype._fixLongConnections = function(node){
     node.next.each(function(nextId){
         var nextNode = this.graph.getNode(nextId);
         var distance = nextNode.rank - node.rank;
@@ -114,7 +111,7 @@ DiFlowChart.prototype._fixLongConnections = function(node){
     }, this);
 };
 
-DiFlowChart.prototype._balancePoints = function(node){
+flowjs.DiFlowChart.prototype._balancePoints = function(node){
     var that = this;
     
     var shouldSwap = function(nodeA, nodeB){
@@ -157,7 +154,7 @@ DiFlowChart.prototype._balancePoints = function(node){
     }, this);
 };
 
-DiFlowChart.prototype._straighten_connections = function(x){
+flowjs.DiFlowChart.prototype._straighten_connections = function(x){
     var nodes = this.graph.getNodesWithRank(x);
     var flowItemBundles = [];
     
@@ -212,11 +209,11 @@ DiFlowChart.prototype._straighten_connections = function(x){
     }, this);
 };
 
-DiFlowChart.prototype._getFlowItem = function(nodeId){
+flowjs.DiFlowChart.prototype._getFlowItem = function(nodeId){
     return this.flowItems[nodeId].flowItem;
 };
     
-DiFlowChart.prototype._getNodeAvgPrevY = function(node){
+flowjs.DiFlowChart.prototype._getNodeAvgPrevY = function(node){
     if (node.getCallCount() === 0){
         throw new Error("cant find the avarge previous y of no previous items. node="+node.id);
     }
@@ -227,12 +224,12 @@ DiFlowChart.prototype._getNodeAvgPrevY = function(node){
 };
 
 
-DiFlowChart.prototype._createItem = function(node, rowNum, rowItemCount, rowUsedSpots){
+flowjs.DiFlowChart.prototype._createItem = function(node, rowNum, rowItemCount, rowUsedSpots){
     var offset = ((rowItemCount-1) * (this.yJumpSize/2));
     var y = this.startY - this.itemRadius - offset + (rowUsedSpots * this.yJumpSize);
     var x = this.startX + (rowNum*this.xJumpSize);
 
-    var flowItem = new flowjsItem(x, y, node.id, this.itemRadius, this.onItemUpdate);
+    var flowItem = new flowjs.flowItem(x, y, node.id, this.itemRadius, this.onItemUpdate);
     flowItem.color = this.color;
     flowItem.background = this.background;
     flowItem.refresh();
@@ -240,11 +237,11 @@ DiFlowChart.prototype._createItem = function(node, rowNum, rowItemCount, rowUsed
     return {node: node, flowItem: flowItem};
 };
 
-DiFlowChart.prototype._createConnector = function(itemA, itemB){
+flowjs.DiFlowChart.prototype._createConnector = function(itemA, itemB){
     var start = itemA.getLocation();
     var end = itemB.getLocation();
     
-    var connector = new flowConnector(start.x, start.y, end.x, end.y);
+    var connector = new flowjs.flowConnector(start.x, start.y, end.x, end.y);
     
     connector.color = this.color;
     connector.strokeWidth = this.lineWidth;
@@ -253,7 +250,7 @@ DiFlowChart.prototype._createConnector = function(itemA, itemB){
 };
 
 
-DiFlowChart.prototype.submitItems = function(){
+flowjs.DiFlowChart.prototype.submitItems = function(){
     var connetorShapes = [];
     var pointShapes = [];
     
@@ -272,8 +269,8 @@ DiFlowChart.prototype.submitItems = function(){
                 conn.refresh();
                 conn.getDrawableItems().forEach(function(shape){
                     connetorShapes.push(shape);
-                })
-            })
+                });
+            });
         }
     }
     
@@ -291,7 +288,7 @@ DiFlowChart.prototype.submitItems = function(){
 
 /*  Update a flow item properties. 
     The given function will be called and will be passed the flow item object */
-DiFlowChart.prototype.updateItem = function(itemId, func){
+flowjs.DiFlowChart.prototype.updateItem = function(itemId, func){
     var item = this.flowItems[itemId];
     if(item === undefined){
         return;
