@@ -50,7 +50,7 @@ flowConnector.prototype.refresh = function(){
         
         this.dots = [
             this.generateDot(new createjs.Shape(), middleA),
-            this.generateDot(new createjs.Shape(), middleB),
+            this.generateDot(new createjs.Shape(), middleB)
         ];
     } else {
         this.generateLine(this.lines[0], start, middleA)
