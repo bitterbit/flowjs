@@ -8,11 +8,11 @@ This library is still work in progress, any contribution will be welcomed
 # Usage
 
 ## Imports
-```
+``` html
 <script type="text/javascript" src="lib/createjs-2015.05.21.min.js"></script>
 <script type="text/javascript" src="flow.min.js"></script>
 ```
-```
+``` html
 <canvas id="canvasID" width="500" height="300"></canvas>
 ```
 
@@ -35,10 +35,10 @@ new flowjs.DiFlowChart("canvasID", graph).draw();
 Here we show how to update a node after we draw it
 We simulate an app the loads data about the node in the background and when its ready, updates the displayed chart
 
-![flow chart loading example](https://github.com/bitterbit/flowjs/blob/master/flowchartloading.svg)
+![flow chart loading example](https://github.com/bitterbit/flowjs/blob/master/flowchartloading.gif)
 
 
-```
+``` javascript
 var graph = new flowjs.DiGraph();
 // ... init the graph
 new flowjs.DiFlowChart(graph, "canvasID").draw();
