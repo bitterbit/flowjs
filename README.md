@@ -1,6 +1,6 @@
 # FlowJS
-Simple HTML5 flow chart using the canvas element.
-FlowJS allows you to render dynamic, animated flow charts using HTML5 canvas with the help of [CreateJs](http://createjs.com).
+Simple HTML5 flow chart using the canvas element.  
+FlowJS allows you to render dynamic, animated flow charts using HTML5 canvas with the help of [CreateJs](http://createjs.com).  
 No more complex graphs and endles zooming.
 
 This library is still work in progress, any contribution will be welcomed
