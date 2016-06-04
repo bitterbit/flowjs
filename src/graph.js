@@ -32,7 +32,7 @@ flowjs.DiGraph.prototype.getNodesWithRank = function(rank){
     var walker = new flowjs.GraphWalker(this);
     
     // nothing to look for here ...
-    if (this.getRankSize(rank) == 0){
+    if (this.getRankSize(rank) === 0){
         return wantedNodes;
     }
     
@@ -99,7 +99,7 @@ flowjs.DiGraph.prototype._rankNodes = function(){
     
     // Copy the call count to a temporary map
     var tmpCallCount = {};
-    for (var key in this._nodes){ tmpCallCount[key] = this._nodes[key].getCallCount() }
+    for (var key in this._nodes){ tmpCallCount[key] = this._nodes[key].getCallCount(); }
     
     // An array that allways contains all the ids of the nodes that have a call count of 0 (at the time)
     var currentStage;

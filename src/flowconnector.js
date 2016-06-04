@@ -45,7 +45,7 @@ flowjs.flowConnector.prototype.refresh = function(){
     var middleB = {x: middleA.x+height,              y: this.yb};
     var end =     {x: this.xb,                       y: this.yb}; 
     
-    if (this.lines === undefined || this.dots == undefined){
+    if (this.lines === undefined || this.dots === undefined){
         this.lines = [
             this.generateLine(new createjs.Shape(), start, middleA),
             this.generateLine(new createjs.Shape(), middleA, middleB),
@@ -57,7 +57,7 @@ flowjs.flowConnector.prototype.refresh = function(){
             this.generateDot(new createjs.Shape(), middleB)
         ];
     } else {
-        this.generateLine(this.lines[0], start, middleA)
+        this.generateLine(this.lines[0], start, middleA);
         this.generateLine(this.lines[1], middleA, middleB);
         this.generateLine(this.lines[2], middleB, end);
         
