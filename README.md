@@ -4,7 +4,7 @@ FlowJS allows you to render dynamic, animated flow charts using HTML5 canvas wit
 **No more complex graphs and endles zooming.**
 Any contribution or suggestion will be welcomed
 
-Visit ![https://prufer.surge.sh/](https://prufer.surge.sh/) for a live demo! (using flowjs to display prufer trees)
+Visit [https://prufer.surge.sh/](https://prufer.surge.sh/) for a live demo! (using flowjs to display prufer trees)
 
 # Usage
 ![flow chart example](https://github.com/bitterbit/flowjs/blob/master/flowchartimg.png)
